@@ -1,0 +1,3 @@
+[submodule "GladiatorRoboticsLib"]
+	path = GladiatorRoboticsLib
+	url = https://github.com/GladiatorRobotics5109/GladiatorRoboticsLib

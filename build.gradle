@@ -70,6 +70,7 @@ task(checkAkitInstall, dependsOn: "classes", type: JavaExec) {
 }
 compileJava.finalizedBy checkAkitInstall
 
+
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 5.
 dependencies {
@@ -95,6 +96,13 @@ dependencies {
 
     def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
     annotationProcessor "org.littletonrobotics.akit.junction:junction-autolog:$akitJson.version"
+
+    implementation project(':GladiatorRoboticsLib:lib')
+}
+
+// Add gladiator robotics lib build as dependenciy of this build
+tasks.named('jar') {
+    dependsOn ":GladiatorRoboticsLib:lib:jar"
 }
 
 test {
