@@ -28,6 +28,8 @@
   "java.test.defaultConfig": "WPIlibUnitTests",
   "cSpell.words": [
     "odometry",
-    "swervemodule"
+    "swervemodule",
+    "teleop",
+    "vrot"
   ]
 }

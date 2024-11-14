@@ -8,4 +8,8 @@ public final class Constants {
     public static final Mode kCurrentMode = Mode.SIM;
 
     public static final Alliance kDefaultAlliance = Alliance.Blue;
+
+    public static final double kLoopPeriodSecs = Robot.defaultPeriodSecs;
+
+    public static final int kPDPPort = 0;
 }

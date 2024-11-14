@@ -4,10 +4,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
+import frc.robot.subsystems.swerve.SwerveOdometryThread;
 import frc.robot.util.Conversions;
 
 public interface SwerveModuleIO {
@@ -45,7 +42,7 @@ public interface SwerveModuleIO {
         double turnVelocityRadPerSec
     ) {
         public final static SwerveModulePosition toModulePosition(SwerveModuleOdometryInputs inputs) {
-            return new SwerveModulePosition(Conversions.driveMotorRotationsToDriveWheelRadians(inputs.drivePositionRad), Conversions.turnMotorRotationsToWheelRotation2d(inputs.turnPositionRad));
+            return new SwerveModulePosition(Conversions.driveMotorRotationsToDriveWheelRadians(inputs.drivePositionRad), Conversions.turnMotorRotationsToDriveWheelRotation2d(inputs.turnPositionRad));
         }
 
         public final SwerveModulePosition toModulePosition() {
@@ -53,15 +50,25 @@ public interface SwerveModuleIO {
         }
     }
 
-    default void setDriveVoltage(Measure<Voltage> volts) {}
+    default void setDriveVoltage(double volts) {}
 
-    default void setTurnVoltage(Measure<Voltage> volts) {}
+    default void setTurnVoltage(double volts) {}
 
-    default void setDriveSpeed(Measure<Velocity<Angle>> speed) {}
+    default void setDriveSpeed(double speedRadPerSec) {}
 
     default void setTurnPosition(Rotation2d position) {}
 
     default void updateInputs(SwerveModuleIOInputs inputs) {}
 
-    default SwerveModuleOdometryInputs updateOdometryInputs() { return new SwerveModuleOdometryInputs(0, 0, 0, 0, 0); }
+    default void registerOdometrySignals(SwerveOdometryThread thread) {}
+
+    default SwerveModuleOdometryInputs updateOdometryInputs() {
+        return new SwerveModuleOdometryInputs(0, 0, 0, 0, 0);
+    }
+
+    default void setDriveBrake(boolean enabled) {}
+
+    default void setTurnBrake(boolean enabled) {}
+
+    default void periodic() {}
 }

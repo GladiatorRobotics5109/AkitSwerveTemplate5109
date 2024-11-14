@@ -1,20 +1,29 @@
 package frc.robot.subsystems.swerve;
 
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
+import org.littletonrobotics.junction.Logger;
+
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyro;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIO;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIONavX;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIOSim;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModule;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIO;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIOSim;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIOTalonFx;
+import frc.robot.util.Util;
 
-public class SwerveSubsystem {
+public class SwerveSubsystem extends SubsystemBase {
     private final SwerveModule m_moduleFL;
     private final SwerveModule m_moduleFR;
     private final SwerveModule m_moduleBL;
@@ -29,10 +38,42 @@ public class SwerveSubsystem {
     public SwerveSubsystem() {
         switch (Constants.kCurrentMode) {
             case REAL:
-                m_moduleFL = new SwerveModule(0, new SwerveModuleIOTalonFx(SwerveConstants.SwerveModuleConstants.kFrontLeftDrivePort, SwerveConstants.SwerveModuleConstants.kFrontLeftTurnPort, SwerveConstants.SwerveModuleConstants.kUseFOC), SwerveConstants.SwerveModuleConstants.kUseMotorPID);
-                m_moduleFR = new SwerveModule(1, new SwerveModuleIOTalonFx(SwerveConstants.SwerveModuleConstants.kFrontRightDrivePort, SwerveConstants.SwerveModuleConstants.kFrontRightTurnPort, SwerveConstants.SwerveModuleConstants.kUseFOC), SwerveConstants.SwerveModuleConstants.kUseMotorPID);
-                m_moduleBL = new SwerveModule(2, new SwerveModuleIOTalonFx(SwerveConstants.SwerveModuleConstants.kBackLeftDrivePort, SwerveConstants.SwerveModuleConstants.kBackLeftTurnPort, SwerveConstants.SwerveModuleConstants.kUseFOC), SwerveConstants.SwerveModuleConstants.kUseMotorPID);
-                m_moduleBR = new SwerveModule(3, new SwerveModuleIOTalonFx(SwerveConstants.SwerveModuleConstants.kBackRightDrivePort, SwerveConstants.SwerveModuleConstants.kBackRightTurnPort, SwerveConstants.SwerveModuleConstants.kUseFOC), SwerveConstants.SwerveModuleConstants.kUseMotorPID);
+                m_moduleFL = new SwerveModule(
+                    0,
+                    new SwerveModuleIOTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kFrontLeftDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kFrontLeftTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleFR = new SwerveModule(
+                    1,
+                    new SwerveModuleIOTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kFrontRightDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kFrontRightTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleBL = new SwerveModule(
+                    2,
+                    new SwerveModuleIOTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kBackLeftDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kBackLeftTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleBR = new SwerveModule(
+                    3,
+                    new SwerveModuleIOTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kBackRightDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kBackRightTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
 
                 m_gyro = new LoggedGyro("Subsystems/Swerve/Gyro", new LoggedGyroIONavX());
 
@@ -58,22 +99,85 @@ public class SwerveSubsystem {
         }
 
         m_kinematics = new SwerveDriveKinematics(
-            SwerveConstants.SwerveModuleConstants.kFrontLeftPos,
-            SwerveConstants.SwerveModuleConstants.kFrontRightPos,
-            SwerveConstants.SwerveModuleConstants.kBackLeftPos,
-            SwerveConstants.SwerveModuleConstants.kBackRightPos
+            SwerveConstants.SwerveModuleConstants.kModulePosFL,
+            SwerveConstants.SwerveModuleConstants.kModulePosFR,
+            SwerveConstants.SwerveModuleConstants.kModulePosBL,
+            SwerveConstants.SwerveModuleConstants.kModulePosBR
         );
-        
-        // TODO: make the gyro update on odometry thread
-        m_odometry = new SwerveOdometryThread(() -> {
-            return new SwerveModulePosition[] {
-                m_moduleFL.updateOdometryInputs().toModulePosition(),
-                m_moduleFR.updateOdometryInputs().toModulePosition(),
-                m_moduleBL.updateOdometryInputs().toModulePosition(),
-                m_moduleBR.updateOdometryInputs().toModulePosition(),
-            };
-        }, m_gyro::getYaw, m_kinematics);
 
-        m_odometry.start();
+        // TODO: make the gyro update on odometry thread
+        m_odometry = new SwerveOdometryThread(new SwerveModule[] {
+            m_moduleFL, m_moduleFR, m_moduleBL, m_moduleBR
+        }, m_gyro::getYaw, m_kinematics);
+    }
+
+    /**
+     *
+     * @param vx
+     *            velocity in m/s
+     * @param vy
+     *            velocity in m/s
+     * @param vrot
+     *            rotational velocity in rad/s
+     * @param fieldRelative
+     */
+    public void drive(double vx, double vy, double vrot, boolean fieldRelative) {
+        Rotation2d headingOffset = Util.getAlliance() == Alliance.Red ? Rotation2d.fromDegrees(180)
+            : Rotation2d.fromDegrees(0);
+        ChassisSpeeds desiredSpeeds = fieldRelative
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(vy, vx, vrot, getHeading().plus(headingOffset))
+            : new ChassisSpeeds(vx, vy, vrot);
+        desiredSpeeds = ChassisSpeeds.discretize(desiredSpeeds, Constants.kLoopPeriodSecs);
+
+        SwerveModuleState[] desiredStates = m_kinematics.toSwerveModuleStates(desiredSpeeds);
+        SwerveModuleState[] optimizedStates = new SwerveModuleState[4];
+        optimizedStates[0] = m_moduleFL.setDesiredState(desiredStates[0]);
+        optimizedStates[1] = m_moduleFR.setDesiredState(desiredStates[1]);
+        optimizedStates[2] = m_moduleBL.setDesiredState(desiredStates[2]);
+        optimizedStates[3] = m_moduleBR.setDesiredState(desiredStates[3]);
+
+        Logger.recordOutput(SwerveConstants.kLogPath + "/desiredSpeeds", desiredSpeeds);
+        Logger.recordOutput(SwerveConstants.kLogPath + "/desiredModuleStates", optimizedStates);
+    }
+
+    public Pose2d getPose() {
+        return m_odometry.getLatest();
+    }
+
+    public Rotation2d getHeading() {
+        return getPose().getRotation();
+    }
+
+    public SwerveModulePosition[] getModulePositions() {
+        return new SwerveModulePosition[] {
+            m_moduleFL.getPosition(),
+            m_moduleFR.getPosition(),
+            m_moduleBL.getPosition(),
+            m_moduleBR.getPosition()
+        };
+    }
+
+    public SwerveModuleState[] getModuleStates() {
+        return new SwerveModuleState[] {
+            m_moduleFL.getState(),
+            m_moduleFR.getState(),
+            m_moduleBL.getState(),
+            m_moduleBR.getState()
+        };
+    }
+
+    public void setController(Command controller) {
+        this.setDefaultCommand(controller);
+    }
+
+    @Override
+    public void periodic() {
+        m_moduleFL.periodic();
+        m_moduleFR.periodic();
+        m_moduleBL.periodic();
+        m_moduleBR.periodic();
+
+        Logger.recordOutput(SwerveConstants.kLogPath + "/currentPose", getPose());
+        Logger.recordOutput(SwerveConstants.kLogPath + "/currentModuleStates", getModuleStates());
     }
 }

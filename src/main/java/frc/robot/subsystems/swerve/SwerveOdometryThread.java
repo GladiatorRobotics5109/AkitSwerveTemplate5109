@@ -1,10 +1,14 @@
 package frc.robot.subsystems.swerve;
 
+import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
+
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -12,23 +16,27 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.subsystems.swerve.swervemodule.SwerveModule;
 
 public class SwerveOdometryThread extends Thread {
-    private final Supplier<SwerveModulePosition[]> m_modulePositionSuppliers;
+    private SwerveModule[] m_modules;
     private SwerveModulePosition[] m_modulePositions;
     private final Supplier<Rotation2d> m_gyroAngle;
 
     private final SwerveDrivePoseEstimator m_poseEstimator;
     private Pose2d m_latestPose;
     private final Lock m_poseLock;
+    private StatusSignal<?>[] m_statusSignals;
 
     public SwerveOdometryThread(
-        Supplier<SwerveModulePosition[]> modulePositionSuppliers,
+        SwerveModule[] modules,
         Supplier<Rotation2d> gyroAngle,
         SwerveDriveKinematics kinematics
     ) {
-        m_modulePositionSuppliers = modulePositionSuppliers;
+        m_modules = modules;
         m_modulePositions = new SwerveModulePosition[4];
+        m_statusSignals = new StatusSignal[0];
+        updateModulePositions();
         m_gyroAngle = gyroAngle;
 
         m_poseEstimator = new SwerveDrivePoseEstimator(
@@ -37,8 +45,25 @@ public class SwerveOdometryThread extends Thread {
             m_modulePositions,
             SwerveConstants.kStartingPose
         );
+        m_latestPose = SwerveConstants.kStartingPose;
 
         m_poseLock = new ReentrantLock();
+    }
+
+    public void registerOdometrySignals(StatusSignal<?>... signals) {
+        int oldLen = m_statusSignals.length;
+        m_statusSignals = Arrays.copyOf(m_statusSignals, oldLen + signals.length);
+        for (int i = oldLen; i < m_statusSignals.length; i++) {
+            m_statusSignals[i] = signals[i];
+        }
+    }
+
+    public void updateModulePositions() {
+        if (m_statusSignals.length != 0)
+            BaseStatusSignal.refreshAll(m_statusSignals);
+        for (int i = 0; i < m_modules.length; i++) {
+            m_modulePositions[i] = m_modules[i].updateOdometryInputs().toModulePosition();
+        }
     }
 
     public void run() {
@@ -46,7 +71,7 @@ public class SwerveOdometryThread extends Thread {
             try {
                 m_poseLock.lock();
 
-                m_modulePositions = m_modulePositionSuppliers.get();
+                updateModulePositions();
 
                 m_poseEstimator.updateWithTime(Logger.getRealTimestamp(), m_gyroAngle.get(), m_modulePositions);
                 m_latestPose = m_poseEstimator.getEstimatedPosition();

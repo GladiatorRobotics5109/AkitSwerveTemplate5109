@@ -6,15 +6,11 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
 import frc.robot.subsystems.swerve.SwerveConstants;
+import frc.robot.subsystems.swerve.SwerveOdometryThread;
 import frc.robot.util.Conversions;
 
 public class SwerveModuleIOTalonFx implements SwerveModuleIO {
@@ -82,29 +78,35 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
         m_signalTurnStatorCurrent = m_turn.getStatorCurrent();
         m_signalTurnSupplyCurrent = m_turn.getSupplyCurrent();
 
-        BaseStatusSignal.setUpdateFrequencyForAll(SwerveConstants.kOdometryFrequencyHz, m_signalDrivePosition, m_signalDriveVelocity, m_signalTurnPosition, m_signalTurnVelocity);
+        BaseStatusSignal.setUpdateFrequencyForAll(
+            SwerveConstants.kOdometryFrequencyHz,
+            m_signalDrivePosition,
+            m_signalDriveVelocity,
+            m_signalTurnPosition,
+            m_signalTurnVelocity
+        );
     }
 
     @Override
-    public void setDriveVoltage(Measure<Voltage> volts) {
-        m_drive.setControl(m_driveVoltage.withOutput(volts.in(Units.Volts)));
+    public void setDriveVoltage(double volts) {
+        m_drive.setControl(m_driveVoltage.withOutput(volts));
     }
 
     @Override
-    public void setTurnVoltage(Measure<Voltage> volts) {
-        m_turn.setControl(m_turnVoltage.withOutput(volts.in(Units.Volts)));
+    public void setTurnVoltage(double volts) {
+        m_turn.setControl(m_turnVoltage.withOutput(volts));
     }
 
     @Override
-    public void setDriveSpeed(Measure<Velocity<Angle>> speed) {
-        m_drive.setControl(m_driveVelocity.withVelocity(speed.in(Units.RotationsPerSecond)));
+    public void setDriveSpeed(double speedRadPerSec) {
+        m_drive.setControl(m_driveVelocity.withVelocity(Conversions.radiansToRotations(speedRadPerSec)));
     }
 
     @Override
     public void setTurnPosition(Rotation2d position) {
         m_turn.setControl(m_turnPosition.withPosition(position.getRotations()));
     }
-    
+
     @Override
     public void updateInputs(SwerveModuleIOInputs inputs) {
         inputs.drivePositionRad = m_latestOdometryInputs.drivePositionRad();
@@ -118,7 +120,9 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
 
         inputs.turnPositionRad = m_latestOdometryInputs.turnPositionRad();
         inputs.turnVelocityRadPerSec = m_latestOdometryInputs.turnVelocityRadPerSec();
-        inputs.turnAccelerationRadPerSecPerSec = Conversions.rotationsToRadians(m_signalTurnAcceleration.getValueAsDouble());
+        inputs.turnAccelerationRadPerSecPerSec = Conversions.rotationsToRadians(
+            m_signalTurnAcceleration.getValueAsDouble()
+        );
         inputs.turnTempCelsius = m_signalTurnTemp.getValueAsDouble();
         inputs.turnAppliedVolts = m_signalTurnAppliedVoltage.getValueAsDouble();
         inputs.turnSupplyVoltage = m_signalTurnSupplyVoltage.getValueAsDouble();
@@ -128,13 +132,39 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
 
     @Override
     public SwerveModuleOdometryInputs updateOdometryInputs() {
-        BaseStatusSignal.refreshAll(m_signalDrivePosition, m_signalDriveVelocity, m_signalDriveAcceleration, m_signalTurnPosition, m_signalTurnVelocity);
-
-        m_latestOdometryInputs = new SwerveModuleOdometryInputs(Conversions.rotationsToRadians(m_signalDrivePosition.getValueAsDouble()), Conversions.rotationsToRadians(m_signalDriveVelocity.getValueAsDouble()), Conversions.rotationsToRadians(m_signalDriveAcceleration.getValueAsDouble()), Conversions.rotationsToRadians(m_signalTurnPosition.getValueAsDouble()), Conversions.rotationsToRadians(m_signalTurnVelocity.getValueAsDouble()));
+        m_latestOdometryInputs = new SwerveModuleOdometryInputs(
+            Conversions.rotationsToRadians(m_signalDrivePosition.getValueAsDouble()),
+            Conversions.rotationsToRadians(m_signalDriveVelocity.getValueAsDouble()),
+            Conversions.rotationsToRadians(m_signalDriveAcceleration.getValueAsDouble()),
+            Conversions.rotationsToRadians(m_signalTurnPosition.getValueAsDouble()),
+            Conversions.rotationsToRadians(m_signalTurnVelocity.getValueAsDouble())
+        );
 
         return m_latestOdometryInputs;
     }
 
+    @Override
+    public void registerOdometrySignals(SwerveOdometryThread thread) {
+        thread.registerOdometrySignals(
+            m_signalDrivePosition,
+            m_signalDriveVelocity,
+            m_signalDriveAcceleration,
+            m_signalTurnPosition,
+            m_signalTurnVelocity
+        );
+    }
+
+    @Override
+    public void setDriveBrake(boolean enabled) {
+        m_drive.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+    }
+
+    @Override
+    public void setTurnBrake(boolean enabled) {
+        m_turn.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+    }
+
+    @Override
     public void periodic() {
         // Refresh all non odometry signals
         BaseStatusSignal.refreshAll(
@@ -144,7 +174,6 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
             m_signalDriveStatorCurrent,
             m_signalDriveSupplyCurrent,
             m_signalTurnAcceleration,
-            m_signalTurnTemp,
             m_signalTurnTemp,
             m_signalTurnAppliedVoltage,
             m_signalTurnSupplyVoltage,
