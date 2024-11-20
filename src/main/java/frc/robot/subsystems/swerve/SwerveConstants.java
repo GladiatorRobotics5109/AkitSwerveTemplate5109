@@ -11,7 +11,6 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
-import frc.robot.util.Conversions;
 
 public final class SwerveConstants {
     public static final class SwerveModuleConstants {
@@ -40,12 +39,22 @@ public final class SwerveConstants {
         public static final Translation2d kModulePosBL = new Translation2d(-0.290449, 0.290449);
         public static final Translation2d kModulePosBR = new Translation2d(-0.290449, -0.290449);
 
+        // Units in module space not motor space
         public static final PIDConstants kDrivePID = new PIDConstants(
-            Conversions.driveWheelRotationsToDriveMotorRadians(1 / 20),
+            6 / 1, // Volts per meter error
             0,
             0
         );
-        public static final PIDConstants kTurnPID = new PIDConstants(1, 0, 0);
+        public static final PIDConstants kTurnPID = new PIDConstants(
+            12 / Math.PI, // Volts per radian error
+            0,
+            0
+        );
+
+        public static final int kDriveStatorCurrentLimit = 70;
+        public static final int kDriveSupplyCurrentLimit = 40;
+
+        public static final int kTurnSupplyCurrentLimit = 30;
     }
 
     public static final boolean kTeleopFieldRelative = true;

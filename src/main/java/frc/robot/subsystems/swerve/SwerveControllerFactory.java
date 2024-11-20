@@ -79,4 +79,21 @@ public final class SwerveControllerFactory {
             controller::getRightTriggerAxis
         );
     }
+
+    public static Command makeTeleop(
+        SwerveSubsystem swerve,
+        DoubleSupplier translateX,
+        DoubleSupplier translateY,
+        DoubleSupplier rot,
+        DoubleSupplier superSpeed
+    ) {
+        return new SwerveTeleopCommand(
+            swerve,
+            SwerveConstants.kTeleopConfig,
+            translateX,
+            translateY,
+            rot,
+            superSpeed
+        );
+    }
 }

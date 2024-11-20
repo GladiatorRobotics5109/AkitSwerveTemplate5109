@@ -7,12 +7,14 @@ import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.lo
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIONavX;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIOSim;
 
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,8 +34,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private final LoggedGyro m_gyro;
 
     private final SwerveDriveKinematics m_kinematics;
-
-    private final SwerveOdometryThread m_odometry;
+    private final SwerveDrivePoseEstimator m_poseEstimator;
 
     public SwerveSubsystem() {
         switch (Constants.kCurrentMode) {
@@ -105,10 +106,12 @@ public class SwerveSubsystem extends SubsystemBase {
             SwerveConstants.SwerveModuleConstants.kModulePosBR
         );
 
-        // TODO: make the gyro update on odometry thread
-        m_odometry = new SwerveOdometryThread(new SwerveModule[] {
-            m_moduleFL, m_moduleFR, m_moduleBL, m_moduleBR
-        }, m_gyro::getYaw, m_kinematics);
+        m_poseEstimator = new SwerveDrivePoseEstimator(
+            m_kinematics,
+            m_gyro.getYaw(),
+            getModulePositions(),
+            new Pose2d()
+        );
     }
 
     /**
@@ -141,7 +144,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-        return m_odometry.getLatest();
+        return m_poseEstimator.getEstimatedPosition();
     }
 
     public Rotation2d getHeading() {
@@ -167,7 +170,15 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void setController(Command controller) {
-        this.setDefaultCommand(controller);
+        if (!controller.hasRequirement(this)) {
+            DriverStation.reportWarning("Swerve Controller Command does not require this subsystem!", true);
+        }
+
+        controller.schedule();
+    }
+
+    public void updatePose() {
+        m_poseEstimator.update(m_gyro.getYaw(), getModulePositions());
     }
 
     @Override
@@ -176,6 +187,8 @@ public class SwerveSubsystem extends SubsystemBase {
         m_moduleFR.periodic();
         m_moduleBL.periodic();
         m_moduleBR.periodic();
+
+        updatePose();
 
         Logger.recordOutput(SwerveConstants.kLogPath + "/currentPose", getPose());
         Logger.recordOutput(SwerveConstants.kLogPath + "/currentModuleStates", getModuleStates());

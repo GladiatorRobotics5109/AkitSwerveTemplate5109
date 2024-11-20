@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve.swervemodule;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -10,7 +11,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.swerve.SwerveConstants;
-import frc.robot.subsystems.swerve.SwerveOdometryThread;
+import frc.robot.subsystems.swerve.SwerveConstants.SwerveModuleConstants;
 import frc.robot.util.Conversions;
 
 public class SwerveModuleIOTalonFx implements SwerveModuleIO {
@@ -43,13 +44,29 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
     private final StatusSignal<Double> m_signalTurnStatorCurrent;
     private final StatusSignal<Double> m_signalTurnSupplyCurrent;
 
-    private SwerveModuleOdometryInputs m_latestOdometryInputs;
-
     public SwerveModuleIOTalonFx(int drivePort, int turnPort, boolean useFOC) {
         m_drive = new TalonFX(drivePort);
         m_turn = new TalonFX(turnPort);
 
         m_useFOC = useFOC;
+
+        TalonFXConfiguration driveConfigs = new TalonFXConfiguration();
+        driveConfigs.CurrentLimits.StatorCurrentLimit = SwerveModuleConstants.kDriveStatorCurrentLimit;
+        driveConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+        driveConfigs.CurrentLimits.SupplyCurrentLimit = SwerveModuleConstants.kDriveSupplyCurrentLimit;
+        driveConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+        driveConfigs.Slot0.kP = SwerveModuleConstants.kDrivePID.kp();
+        driveConfigs.Slot0.kI = SwerveModuleConstants.kDrivePID.ki();
+        driveConfigs.Slot0.kD = SwerveModuleConstants.kDrivePID.kd();
+        m_drive.getConfigurator().apply(driveConfigs);
+
+        TalonFXConfiguration turnConfigs = new TalonFXConfiguration();
+        turnConfigs.CurrentLimits.SupplyCurrentLimit = SwerveModuleConstants.kTurnSupplyCurrentLimit;
+        turnConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+        turnConfigs.Slot0.kP = SwerveModuleConstants.kTurnPID.kp();
+        turnConfigs.Slot0.kI = SwerveModuleConstants.kTurnPID.ki();
+        turnConfigs.Slot0.kD = SwerveModuleConstants.kTurnPID.kd();
+        m_turn.getConfigurator().apply(turnConfigs);
 
         m_driveVelocity = new VelocityVoltage(0);
         m_driveVelocity.EnableFOC = m_useFOC;
@@ -109,17 +126,19 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
 
     @Override
     public void updateInputs(SwerveModuleIOInputs inputs) {
-        inputs.drivePositionRad = m_latestOdometryInputs.drivePositionRad();
-        inputs.driveVelocityRadPerSec = m_latestOdometryInputs.driveVelocityRadPerSec();
-        inputs.driveAccelerationRadPerSecPerSec = m_latestOdometryInputs.driveAccelerationRadPerSecPerSec();
+        inputs.drivePositionRad = Conversions.rotationsToRadians(m_signalDrivePosition.getValueAsDouble());
+        inputs.driveVelocityRadPerSec = Conversions.rotationsToRadians(m_signalDriveVelocity.getValueAsDouble());
+        inputs.driveAccelerationRadPerSecPerSec = Conversions.rotationsToRadians(
+            m_signalDriveAcceleration.getValueAsDouble()
+        );
         inputs.driveTempCelsius = m_signalDriveTemp.getValueAsDouble();
         inputs.driveAppliedVolts = m_signalDriveAppliedVoltage.getValueAsDouble();
         inputs.driveSupplyVoltage = m_signalDriveSupplyVoltage.getValueAsDouble();
         inputs.driveStatorCurrentAmps = m_signalDriveStatorCurrent.getValueAsDouble();
         inputs.driveSupplyCurrentAmps = m_signalDriveSupplyCurrent.getValueAsDouble();
 
-        inputs.turnPositionRad = m_latestOdometryInputs.turnPositionRad();
-        inputs.turnVelocityRadPerSec = m_latestOdometryInputs.turnVelocityRadPerSec();
+        inputs.turnPositionRad = Conversions.rotationsToRadians(m_signalTurnPosition.getValueAsDouble());
+        inputs.turnVelocityRadPerSec = Conversions.rotationsToRadians(m_signalTurnVelocity.getValueAsDouble());
         inputs.turnAccelerationRadPerSecPerSec = Conversions.rotationsToRadians(
             m_signalTurnAcceleration.getValueAsDouble()
         );
@@ -128,30 +147,6 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
         inputs.turnSupplyVoltage = m_signalTurnSupplyVoltage.getValueAsDouble();
         inputs.turnStatorCurrentAmps = m_signalTurnStatorCurrent.getValueAsDouble();
         inputs.turnSupplyCurrentAmps = m_signalTurnSupplyCurrent.getValueAsDouble();
-    }
-
-    @Override
-    public SwerveModuleOdometryInputs updateOdometryInputs() {
-        m_latestOdometryInputs = new SwerveModuleOdometryInputs(
-            Conversions.rotationsToRadians(m_signalDrivePosition.getValueAsDouble()),
-            Conversions.rotationsToRadians(m_signalDriveVelocity.getValueAsDouble()),
-            Conversions.rotationsToRadians(m_signalDriveAcceleration.getValueAsDouble()),
-            Conversions.rotationsToRadians(m_signalTurnPosition.getValueAsDouble()),
-            Conversions.rotationsToRadians(m_signalTurnVelocity.getValueAsDouble())
-        );
-
-        return m_latestOdometryInputs;
-    }
-
-    @Override
-    public void registerOdometrySignals(SwerveOdometryThread thread) {
-        thread.registerOdometrySignals(
-            m_signalDrivePosition,
-            m_signalDriveVelocity,
-            m_signalDriveAcceleration,
-            m_signalTurnPosition,
-            m_signalTurnVelocity
-        );
     }
 
     @Override

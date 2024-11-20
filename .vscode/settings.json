@@ -30,6 +30,7 @@
     "odometry",
     "swervemodule",
     "teleop",
-    "vrot"
+    "vrot",
+    "WPILOG"
   ]
 }

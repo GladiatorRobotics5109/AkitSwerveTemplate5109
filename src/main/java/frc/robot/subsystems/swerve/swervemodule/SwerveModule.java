@@ -4,14 +4,12 @@ import org.littletonrobotics.junction.Logger;
 
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedpidcontroller.LoggedPIDController;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.subsystems.swerve.SwerveConstants.SwerveModuleConstants;
-import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIO.SwerveModuleOdometryInputs;
 import frc.robot.util.Conversions;
 
 public class SwerveModule {
@@ -27,12 +25,8 @@ public class SwerveModule {
     private SwerveModuleState m_currentState;
     private SwerveModulePosition m_currentPosition;
 
-    // In motor space, not module space
-    private double m_driveDesiredSpeedRadPerSec;
-    private Rotation2d m_turnDesiredAngle;
-
     private LoggedPIDController m_drivePID;
-    private PIDController m_turnPID;
+    private LoggedPIDController m_turnPID;
 
     public SwerveModule(int id, SwerveModuleIO io, boolean useMotorPID) {
         m_id = id;
@@ -49,37 +43,28 @@ public class SwerveModule {
 
         if (!m_useMotorPID) {
             m_drivePID = SwerveModuleConstants.kDrivePID.getLoggedPIDController(m_logPath + "/drivePID");
-            m_turnPID = SwerveModuleConstants.kTurnPID.getPIDController();
-
-            m_driveDesiredSpeedRadPerSec = 0.0;
-            m_turnDesiredAngle = Rotation2d.fromDegrees(0);
+            m_turnPID = SwerveModuleConstants.kTurnPID.getLoggedPIDController(m_logPath + "/turnPID");
+            // m_drivePID = SwerveModuleConstants.kDrivePID.getPIDController();
+            // m_turnPID = SwerveModuleConstants.kTurnPID.getPIDController();
         }
     }
 
     public SwerveModuleState setDesiredState(SwerveModuleState desiredState, boolean optimize) {
-        SwerveModuleState optimizedState = optimize ? SwerveModuleState.optimize(desiredState, getTurnAngle())
+        SwerveModuleState optimizedState = optimize
+            ? SwerveModuleState.optimize(desiredState, getTurnAngle())
             : desiredState;
-
-        m_driveDesiredSpeedRadPerSec = Conversions.driveWheelMetersToDriveMotorRadians(
-            optimizedState.speedMetersPerSecond
-        );
-
-        m_turnDesiredAngle = Conversions.driveWheelAngleRotation2dToTurnMotorRotation2d(optimizedState.angle);
 
         m_desiredState = optimizedState;
         return optimizedState;
     }
 
     public SwerveModuleState setDesiredState(SwerveModuleState desiredState) {
-        return setDesiredState(desiredState, true);
+        return setDesiredState(desiredState, false);
     }
 
     public Rotation2d getTurnAngle() {
-        return Rotation2d.fromRadians(m_inputs.turnPositionRad);
-    }
-
-    public SwerveModuleOdometryInputs updateOdometryInputs() {
-        return m_io.updateOdometryInputs();
+        // return m_desiredState.angle;
+        return m_currentState.angle;
     }
 
     public SwerveModuleState getState() {
@@ -101,15 +86,19 @@ public class SwerveModule {
         else {
             // Update PID controllers if use them on rio
             if (m_useMotorPID) {
-                m_io.setDriveSpeed(m_driveDesiredSpeedRadPerSec);
+                m_io.setDriveSpeed(
+                    Conversions.driveWheelMetersToDriveMotorRadians(m_desiredState.speedMetersPerSecond)
+                );
 
-                m_io.setTurnPosition(m_turnDesiredAngle);
+                m_io.setTurnPosition(Conversions.driveWheelAngleRotation2dToTurnMotorRotation2d(m_desiredState.angle));
             }
             else {
                 m_io.setDriveVoltage(
-                    m_drivePID.calculate(m_inputs.driveVelocityRadPerSec, m_driveDesiredSpeedRadPerSec)
+                    m_drivePID.calculate(m_currentState.speedMetersPerSecond, m_desiredState.speedMetersPerSecond)
                 );
-                m_io.setTurnVoltage(m_turnPID.calculate(m_inputs.turnPositionRad, m_turnDesiredAngle.getRadians()));
+                m_io.setTurnVoltage(
+                    m_turnPID.calculate(m_currentState.angle.getRadians(), m_desiredState.angle.getRadians())
+                );
             }
         }
 
