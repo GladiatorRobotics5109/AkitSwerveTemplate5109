@@ -2,9 +2,12 @@ package frc.robot.subsystems.swerve;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants;
 import frc.robot.subsystems.swerve.SwerveConstants.SwerveDriveConfiguration;
 
 public final class SwerveControllerFactory {
@@ -16,6 +19,8 @@ public final class SwerveControllerFactory {
         private final SwerveSubsystem m_swerve;
         private final SwerveDriveConfiguration m_config;
         private final DoubleSupplier m_x, m_y, m_rot, m_superSpeed;
+
+        private final SlewRateLimiter m_xRateLimit, m_yRateLimit, m_rotRateLimit;
 
         public SwerveTeleopCommand(
             SwerveSubsystem swerve,
@@ -33,6 +38,10 @@ public final class SwerveControllerFactory {
             m_rot = rot;
             m_superSpeed = superSpeed;
 
+            m_xRateLimit = new SlewRateLimiter(20);
+            m_yRateLimit = new SlewRateLimiter(20);
+            m_rotRateLimit = new SlewRateLimiter(10);
+
             // Configure button bindings
         }
 
@@ -46,13 +55,16 @@ public final class SwerveControllerFactory {
             double driveSpeedMetersPerSec = m_config.evalDriveSpeed(m_superSpeed.getAsDouble()).in(
                 Units.MetersPerSecond
             );
-            double vx = driveSpeedMetersPerSec * m_x.getAsDouble();
-            double vy = driveSpeedMetersPerSec * m_y.getAsDouble();
+            double vx = driveSpeedMetersPerSec
+                * m_xRateLimit.calculate(MathUtil.applyDeadband(m_x.getAsDouble(), Constants.kJoystickDeadzone));
+            double vy = driveSpeedMetersPerSec
+                * m_yRateLimit.calculate(MathUtil.applyDeadband(m_y.getAsDouble(), Constants.kJoystickDeadzone));
 
             double rotationSpeedRadPerSec = m_config.evalRotationSpeed(m_superSpeed.getAsDouble()).in(
                 Units.RadiansPerSecond
             );
-            double vrot = rotationSpeedRadPerSec * m_rot.getAsDouble();
+            double vrot = rotationSpeedRadPerSec
+                * m_rotRateLimit.calculate(MathUtil.applyDeadband(m_rot.getAsDouble(), Constants.kJoystickDeadzone));
 
             m_swerve.drive(vx, vy, vrot, m_config.fieldRelative());
             // m_swerve.drive(0, 1.5, 0, m_config.fieldRelative());

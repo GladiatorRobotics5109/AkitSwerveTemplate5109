@@ -11,11 +11,12 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import frc.robot.util.Conversions;
 
 public final class SwerveConstants {
     public static final class SwerveModuleConstants {
         /* Use PID controller on motor controllers */
-        public static final boolean kUseMotorPID = true;
+        public static final boolean kUseMotorPID = false;
         /* Use FOC on TalonFX */
         public static final boolean kUseFOC = false;
 
@@ -25,14 +26,14 @@ public final class SwerveConstants {
         public static final double kWheelRadiusMeters = 0.0472659347214289;
 
         // TODO: get correct ports
-        public static final int kFrontLeftDrivePort = 0;
-        public static final int kFrontLeftTurnPort = 0;
-        public static final int kFrontRightDrivePort = 0;
-        public static final int kFrontRightTurnPort = 0;
-        public static final int kBackLeftDrivePort = 0;
-        public static final int kBackLeftTurnPort = 0;
-        public static final int kBackRightDrivePort = 0;
-        public static final int kBackRightTurnPort = 0;
+        public static final int kFrontLeftDrivePort = 2;
+        public static final int kFrontLeftTurnPort = 5;
+        public static final int kFrontRightDrivePort = 4;
+        public static final int kFrontRightTurnPort = 40;
+        public static final int kBackLeftDrivePort = 1;
+        public static final int kBackLeftTurnPort = 22;
+        public static final int kBackRightDrivePort = 3;
+        public static final int kBackRightTurnPort = 30;
 
         public static final Translation2d kModulePosFL = new Translation2d(0.290449, 0.290449);
         public static final Translation2d kModulePosFR = new Translation2d(0.290449, -0.290449);;
@@ -41,12 +42,12 @@ public final class SwerveConstants {
 
         // Units in module space not motor space
         public static final PIDConstants kDrivePID = new PIDConstants(
-            6 / 1, // Volts per meter error
+            11 / Conversions.feetToMeters(12.9), // Volts per meter error
             0,
-            0
+            0.001
         );
         public static final PIDConstants kTurnPID = new PIDConstants(
-            12 / Math.PI, // Volts per radian error
+            12 / (2 * Math.PI), // Volts per radian error
             0,
             0
         );
@@ -64,8 +65,10 @@ public final class SwerveConstants {
     public static final String kLogPath = "Subsystems/Swerve";
 
     public static final SwerveDriveConfiguration kTeleopConfig = new SwerveDriveConfiguration(
+        // Units.MetersPerSecond.of(0.5),
         Units.MetersPerSecond.of(2.5),
         Units.FeetPerSecond.of(12.9),
+        // Units.RotationsPerSecond.of(0.2),
         Units.RotationsPerSecond.of(1),
         Units.RotationsPerSecond.of(1.5),
         kTeleopFieldRelative

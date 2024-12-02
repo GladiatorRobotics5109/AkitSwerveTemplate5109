@@ -106,6 +106,8 @@ public class SwerveSubsystem extends SubsystemBase {
             SwerveConstants.SwerveModuleConstants.kModulePosBR
         );
 
+        m_gyro.resetYaw();
+
         m_poseEstimator = new SwerveDrivePoseEstimator(
             m_kinematics,
             m_gyro.getYaw(),

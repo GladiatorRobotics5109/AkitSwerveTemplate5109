@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedpidcontroller.LoggedPIDController;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -28,6 +29,8 @@ public class SwerveModule {
     private LoggedPIDController m_drivePID;
     private LoggedPIDController m_turnPID;
 
+    private SimpleMotorFeedforward m_driveFeedForward;
+
     public SwerveModule(int id, SwerveModuleIO io, boolean useMotorPID) {
         m_id = id;
         m_logPath = SwerveConstants.kLogPath + String.format("/SwerveModule%d", m_id);
@@ -44,6 +47,7 @@ public class SwerveModule {
         if (!m_useMotorPID) {
             m_drivePID = SwerveModuleConstants.kDrivePID.getLoggedPIDController(m_logPath + "/drivePID");
             m_turnPID = SwerveModuleConstants.kTurnPID.getLoggedPIDController(m_logPath + "/turnPID");
+            m_driveFeedForward = new SimpleMotorFeedforward(0.12, 0);
             // m_drivePID = SwerveModuleConstants.kDrivePID.getPIDController();
             // m_turnPID = SwerveModuleConstants.kTurnPID.getPIDController();
         }
@@ -59,7 +63,7 @@ public class SwerveModule {
     }
 
     public SwerveModuleState setDesiredState(SwerveModuleState desiredState) {
-        return setDesiredState(desiredState, false);
+        return setDesiredState(desiredState, true);
     }
 
     public Rotation2d getTurnAngle() {
@@ -94,7 +98,8 @@ public class SwerveModule {
             }
             else {
                 m_io.setDriveVoltage(
-                    m_drivePID.calculate(m_currentState.speedMetersPerSecond, m_desiredState.speedMetersPerSecond)
+                    m_driveFeedForward.calculate(m_desiredState.speedMetersPerSecond)
+                        + m_drivePID.calculate(m_currentState.speedMetersPerSecond, m_desiredState.speedMetersPerSecond)
                 );
                 m_io.setTurnVoltage(
                     m_turnPID.calculate(m_currentState.angle.getRadians(), m_desiredState.angle.getRadians())
@@ -102,13 +107,13 @@ public class SwerveModule {
             }
         }
 
-        m_currentState.angle = Conversions.turnMotorRadiansToDriveWheelRotation2d(m_inputs.turnPositionRad);
-        m_currentState.speedMetersPerSecond = Conversions.driveMotorRadiansToDriveWheelMeters(
+        m_currentState.angle = Rotation2d.fromRadians(m_inputs.turnPositionRad);
+        m_currentState.speedMetersPerSecond = Conversions.driveWheelRadiansToWheelMeters(
             m_inputs.driveVelocityRadPerSec
         );
 
         m_currentPosition.angle = m_currentState.angle;
-        m_currentPosition.distanceMeters = Conversions.driveMotorRadiansToDriveWheelMeters(m_inputs.drivePositionRad);
+        m_currentPosition.distanceMeters = Conversions.driveWheelRadiansToWheelMeters(m_inputs.drivePositionRad);
 
         Logger.recordOutput(m_logPath.concat("/desiredState"), m_desiredState);
         Logger.recordOutput(m_logPath.concat("/currentState"), m_currentState);
