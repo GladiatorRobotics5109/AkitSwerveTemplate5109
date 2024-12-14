@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModule;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIO;
-import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIOSim;
+import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIOSimTalonFx;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIOTalonFx;
 import frc.robot.util.Util;
 
@@ -80,10 +80,42 @@ public class SwerveSubsystem extends SubsystemBase {
 
                 break;
             case SIM:
-                m_moduleFL = new SwerveModule(0, new SwerveModuleIOSim(), false);
-                m_moduleFR = new SwerveModule(1, new SwerveModuleIOSim(), false);
-                m_moduleBL = new SwerveModule(2, new SwerveModuleIOSim(), false);
-                m_moduleBR = new SwerveModule(3, new SwerveModuleIOSim(), false);
+                m_moduleFL = new SwerveModule(
+                    0,
+                    new SwerveModuleIOSimTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kFrontLeftDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kFrontLeftTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleFR = new SwerveModule(
+                    1,
+                    new SwerveModuleIOSimTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kFrontRightDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kFrontRightTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleBL = new SwerveModule(
+                    2,
+                    new SwerveModuleIOSimTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kBackLeftDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kBackLeftTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleBR = new SwerveModule(
+                    3,
+                    new SwerveModuleIOSimTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kBackRightDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kBackRightTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
 
                 m_gyro = new LoggedGyro("Subsystems/Swerve/Gyro", new LoggedGyroIOSim());
 

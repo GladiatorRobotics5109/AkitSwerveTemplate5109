@@ -42,12 +42,13 @@ public final class SwerveConstants {
 
         // Units in module space not motor space
         public static final PIDConstants kDrivePID = new PIDConstants(
-            11 / Conversions.feetToMeters(12.9), // Volts per meter error
+            // 12 volts for 12.9ft of error
+            12 / 0.5, // Volts per meter error
             0,
             0.001
         );
         public static final PIDConstants kTurnPID = new PIDConstants(
-            12 / (2 * Math.PI), // Volts per radian error
+            12 / Conversions.rotationsToRadians(0.05), // Volts per radian error
             0,
             0
         );
@@ -66,7 +67,7 @@ public final class SwerveConstants {
 
     public static final SwerveDriveConfiguration kTeleopConfig = new SwerveDriveConfiguration(
         // Units.MetersPerSecond.of(0.5),
-        Units.MetersPerSecond.of(2.5),
+        Units.MetersPerSecond.of(3),
         Units.FeetPerSecond.of(12.9),
         // Units.RotationsPerSecond.of(0.2),
         Units.RotationsPerSecond.of(1),
