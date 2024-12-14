@@ -14,6 +14,13 @@ public class Conversions extends ConversionsBase {
         );
     }
 
+    public static final double driveWheelMetersToWheelRadians(double m) {
+        return ConversionsBase.driveWheelMetersToWheelRadians(
+            m,
+            SwerveConstants.SwerveModuleConstants.kWheelRadiusMeters
+        );
+    }
+
     public static final double driveWheelRadiansToWheelMeters(double m) {
         return ConversionsBase.driveWheelRadiansToWheelMeters(
             m,

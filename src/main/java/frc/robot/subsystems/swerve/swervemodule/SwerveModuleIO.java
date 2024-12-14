@@ -34,8 +34,20 @@ public interface SwerveModuleIO {
 
     default void setTurnVoltage(double volts) {}
 
-    default void setDriveSpeed(double speedRadPerSec) {}
+    /**
+     * Sets the desired speed of the drive wheel in radians per second
+     *
+     * @param speedRadPerSec
+     *            desired speed of wheel in radians per second
+     */
+    default void setDriveWheelSpeed(double speedRadPerSec) {}
 
+    /**
+     * Set the desired module angle
+     *
+     * @param position
+     *            desired angle
+     */
     default void setTurnPosition(Rotation2d position) {}
 
     default void updateInputs(SwerveModuleIOInputs inputs) {}

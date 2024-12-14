@@ -55,6 +55,8 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
         driveConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
         driveConfigs.CurrentLimits.SupplyCurrentLimit = SwerveModuleConstants.kDriveSupplyCurrentLimit;
         driveConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+        // TODO: test new ratios
+        driveConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kDriveGearRatio.asDouble();
         driveConfigs.Slot0.kP = SwerveModuleConstants.kDrivePID.kp();
         driveConfigs.Slot0.kI = SwerveModuleConstants.kDrivePID.ki();
         driveConfigs.Slot0.kD = SwerveModuleConstants.kDrivePID.kd();
@@ -63,6 +65,7 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
         TalonFXConfiguration turnConfigs = new TalonFXConfiguration();
         turnConfigs.CurrentLimits.SupplyCurrentLimit = SwerveModuleConstants.kTurnSupplyCurrentLimit;
         turnConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+        turnConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kTurnGearRatio;
         turnConfigs.Slot0.kP = SwerveModuleConstants.kTurnPID.kp();
         turnConfigs.Slot0.kI = SwerveModuleConstants.kTurnPID.ki();
         turnConfigs.Slot0.kD = SwerveModuleConstants.kTurnPID.kd();
@@ -118,8 +121,8 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
     }
 
     @Override
-    public void setDriveSpeed(double speedRadPerSec) {
-        m_drive.setControl(m_driveVelocity.withVelocity(Conversions.radiansToRotations(speedRadPerSec)));
+    public void setDriveWheelSpeed(double wheelSpeedRadPerSec) {
+        m_drive.setControl(m_driveVelocity.withVelocity(Conversions.radiansToRotations(wheelSpeedRadPerSec)));
     }
 
     @Override

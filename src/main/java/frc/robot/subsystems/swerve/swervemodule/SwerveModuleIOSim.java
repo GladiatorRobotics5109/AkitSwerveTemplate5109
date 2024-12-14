@@ -56,7 +56,7 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     }
 
     @Override
-    public void setDriveSpeed(double speedRadPerSec) {}
+    public void setDriveWheelSpeed(double speedRadPerSec) {}
 
     @Override
     public void setTurnPosition(Rotation2d position) {}

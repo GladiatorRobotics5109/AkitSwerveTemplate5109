@@ -88,13 +88,12 @@ public class SwerveModule {
             m_io.setTurnVoltage(0);
         }
         else {
-            // Update PID controllers if use them on rio
             if (m_useMotorPID) {
-                m_io.setDriveSpeed(
-                    Conversions.driveWheelMetersToDriveMotorRadians(m_desiredState.speedMetersPerSecond)
+                m_io.setDriveWheelSpeed(
+                    Conversions.driveWheelMetersToWheelRadians(m_desiredState.speedMetersPerSecond)
                 );
 
-                m_io.setTurnPosition(Conversions.driveWheelAngleRotation2dToTurnMotorRotation2d(m_desiredState.angle));
+                m_io.setTurnPosition(m_desiredState.angle);
             }
             else {
                 m_io.setDriveVoltage(

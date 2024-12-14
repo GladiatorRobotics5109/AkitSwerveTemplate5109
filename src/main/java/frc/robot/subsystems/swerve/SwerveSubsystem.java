@@ -190,6 +190,18 @@ public class SwerveSubsystem extends SubsystemBase {
         m_moduleBL.periodic();
         m_moduleBR.periodic();
 
+        if (m_gyro.isSim()) {
+            double vrot = m_kinematics.toChassisSpeeds(
+                m_moduleFL.getState(),
+                m_moduleFR.getState(),
+                m_moduleBL.getState(),
+                m_moduleBR.getState()
+            ).omegaRadiansPerSecond;
+            double newRot = m_gyro.getYaw().getRadians() + (vrot * Constants.kLoopPeriodSecs);
+
+            m_gyro.setYaw(Rotation2d.fromRadians(newRot));
+        }
+
         updatePose();
 
         Logger.recordOutput(SwerveConstants.kLogPath + "/currentPose", getPose());

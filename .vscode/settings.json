@@ -27,10 +27,12 @@
   ],
   "java.test.defaultConfig": "WPIlibUnitTests",
   "cSpell.words": [
+    "Deadzone",
     "odometry",
     "swervemodule",
     "teleop",
     "vrot",
     "WPILOG"
-  ]
+  ],
+  "java.debug.settings.onBuildFailureProceed": true
 }

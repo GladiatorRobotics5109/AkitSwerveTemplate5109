@@ -6,6 +6,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.SwerveConstants.SwerveDriveConfiguration;
@@ -89,6 +90,17 @@ public final class SwerveControllerFactory {
             controller::getLeftY,
             controller::getRightX,
             controller::getRightTriggerAxis
+        );
+    }
+
+    public static Command makeTeleop(SwerveSubsystem swerve, CommandPS5Controller controller) {
+        return new SwerveTeleopCommand(
+            swerve,
+            SwerveConstants.kTeleopConfig,
+            controller::getLeftX,
+            controller::getLeftY,
+            controller::getRightX,
+            controller::getR2Axis
         );
     }
 
