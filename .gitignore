@@ -4,6 +4,8 @@
 # BuildConstants
 src/main/java/frc/robot/BuildConstants.java
 
+*.factorypath
+
 
 ### C++ ###
 # Prerequisites
