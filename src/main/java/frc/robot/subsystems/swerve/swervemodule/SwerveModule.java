@@ -47,7 +47,8 @@ public class SwerveModule {
         if (!m_useMotorPID) {
             m_drivePID = SwerveModuleConstants.kDrivePID.getLoggedPIDController(m_logPath + "/drivePID");
             m_turnPID = SwerveModuleConstants.kTurnPID.getLoggedPIDController(m_logPath + "/turnPID");
-            m_driveFeedForward = new SimpleMotorFeedforward(0.12, 0);
+            // TODO: add feed forward to onboard motor controllers
+            m_driveFeedForward = new SimpleMotorFeedforward(0.12, 9.5 / 3);
             // m_drivePID = SwerveModuleConstants.kDrivePID.getPIDController();
             // m_turnPID = SwerveModuleConstants.kTurnPID.getPIDController();
         }

@@ -15,7 +15,7 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     private double m_turnAppliedVolts;
 
     public SwerveModuleIOSim() {
-        m_drive = new DCMotorSim(DCMotor.getKrakenX60(1), SwerveModuleConstants.kDriveGearRatio.asDouble(), 0.5);
+        m_drive = new DCMotorSim(DCMotor.getKrakenX60(1), SwerveModuleConstants.kDriveGearRatio.asDouble(), 0.025);
         m_turn = new DCMotorSim(DCMotor.getKrakenX60(1), SwerveModuleConstants.kTurnGearRatio, 0.004);
     }
 

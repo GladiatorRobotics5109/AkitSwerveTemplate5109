@@ -4,6 +4,7 @@ import com.github.gladiatorrobotics5109.gladiatorroboticslib.constants.swerveMod
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.constants.swerveModuleConstants.SwerveDriveSpecialtiesConstants.MK4Constants.MK4GearRatio;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.math.controller.PIDConstants;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
@@ -42,15 +43,21 @@ public final class SwerveConstants {
 
         // Units in module space not motor space
         public static final PIDConstants kDrivePID = new PIDConstants(
-            // 12 volts for 12.9ft of error
-            12 / 0.5, // Volts per meter error
-            0,
-            0.001
-        );
-        public static final PIDConstants kTurnPID = new PIDConstants(
-            12 / Conversions.rotationsToRadians(0.05), // Volts per radian error
+            10 / 3, // Volts per m/s error
             0,
             0
+        );
+
+        public static final PIDConstants kTurnPID = new PIDConstants(
+            12 / Conversions.rotationsToRadians(1.1), // Volts per radian error
+            0,
+            0,
+            PIDConstants.kIZone,
+            true,
+            -Math.PI,
+            Math.PI,
+            PIDConstants.kPositionTolerance,
+            PIDConstants.kVelocityTolerance
         );
 
         public static final int kDriveStatorCurrentLimit = 70;
@@ -68,10 +75,10 @@ public final class SwerveConstants {
     public static final SwerveDriveConfiguration kTeleopConfig = new SwerveDriveConfiguration(
         // Units.MetersPerSecond.of(0.5),
         Units.MetersPerSecond.of(3),
-        Units.FeetPerSecond.of(12.9),
+        Units.FeetPerSecond.of(12.9), // Theoretically max achievable speed
         // Units.RotationsPerSecond.of(0.2),
-        Units.RotationsPerSecond.of(1),
-        Units.RotationsPerSecond.of(1.5),
+        Units.RotationsPerSecond.of(0.75),
+        Units.RotationsPerSecond.of(1.25),
         kTeleopFieldRelative
     );
 
@@ -80,12 +87,14 @@ public final class SwerveConstants {
     public static final record SwerveDriveConfiguration(Measure<Velocity<Distance>> defaultDriveSpeed, Measure<Velocity<Distance>> maxDriveSpeed, Measure<Velocity<Angle>> defaultRotationSpeed, Measure<Velocity<Angle>> maxRotationSpeed, boolean fieldRelative) {
         public Measure<Velocity<Distance>> evalDriveSpeed(double t) {
             // l(t) = (f / i) * t + i
-            return maxDriveSpeed.divide(defaultDriveSpeed.in(maxDriveSpeed.unit())).times(t).plus(defaultDriveSpeed);
+            double slope = maxDriveSpeed.in(Units.MetersPerSecond) / defaultDriveSpeed.in(Units.MetersPerSecond);
+            return defaultDriveSpeed.plus(Units.MetersPerSecond.of(slope * MathUtil.clamp(t, 0, 1)));
         }
 
         public Measure<Velocity<Angle>> evalRotationSpeed(double t) {
             // l(t) = (f / i) * t + i
-            return maxRotationSpeed.divide(defaultRotationSpeed.in(maxRotationSpeed.unit())).times(t).plus(defaultRotationSpeed);
+            double slope = maxRotationSpeed.in(Units.RadiansPerSecond) / defaultRotationSpeed.in(Units.RadiansPerSecond);
+            return defaultRotationSpeed.plus(Units.RotationsPerSecond.of(slope * MathUtil.clamp(t, 0, 1)));
         }
     }
 }

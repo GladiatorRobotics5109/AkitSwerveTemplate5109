@@ -65,7 +65,7 @@ public final class SwerveControllerFactory {
                 Units.RadiansPerSecond
             );
             double vrot = rotationSpeedRadPerSec
-                * m_rotRateLimit.calculate(MathUtil.applyDeadband(m_rot.getAsDouble(), Constants.kJoystickDeadzone));
+                * -m_rotRateLimit.calculate(MathUtil.applyDeadband(m_rot.getAsDouble(), Constants.kJoystickDeadzone));
 
             m_swerve.drive(vx, vy, vrot, m_config.fieldRelative());
             // m_swerve.drive(0, 1.5, 0, m_config.fieldRelative());
