@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve;
 
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.constants.swerveModuleConstants.SwerveDriveSpecialtiesConstants.MK4Constants;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.constants.swerveModuleConstants.SwerveDriveSpecialtiesConstants.MK4Constants.MK4GearRatio;
+import com.github.gladiatorrobotics5109.gladiatorroboticslib.math.controller.FeedforwardConstants;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.math.controller.PIDConstants;
 
 import edu.wpi.first.math.MathUtil;
@@ -47,6 +48,8 @@ public final class SwerveConstants {
             0,
             0
         );
+
+        public static final FeedforwardConstants kDriveFeedForward = new FeedforwardConstants(0.12, 9.5 / 3);
 
         public static final PIDConstants kTurnPID = new PIDConstants(
             12 / Conversions.rotationsToRadians(1.1), // Volts per radian error

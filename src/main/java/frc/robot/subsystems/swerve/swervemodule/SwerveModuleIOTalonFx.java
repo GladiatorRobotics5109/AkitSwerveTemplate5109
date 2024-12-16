@@ -60,6 +60,9 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
         driveConfigs.Slot0.kP = SwerveModuleConstants.kDrivePID.kp();
         driveConfigs.Slot0.kI = SwerveModuleConstants.kDrivePID.ki();
         driveConfigs.Slot0.kD = SwerveModuleConstants.kDrivePID.kd();
+        driveConfigs.Slot0.kS = SwerveModuleConstants.kDriveFeedForward.ks();
+        driveConfigs.Slot0.kV = SwerveModuleConstants.kDriveFeedForward.kv();
+        driveConfigs.Slot0.kA = SwerveModuleConstants.kDriveFeedForward.ka();
         m_drive.getConfigurator().apply(driveConfigs);
 
         TalonFXConfiguration turnConfigs = new TalonFXConfiguration();

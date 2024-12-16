@@ -74,16 +74,19 @@ public class SwerveModuleIOSimTalonFx implements SwerveModuleIO {
         driveConfigs.CurrentLimits.SupplyCurrentLimit = SwerveModuleConstants.kDriveSupplyCurrentLimit;
         driveConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
         // TODO: test new ratios
-        driveConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kDriveGearRatio.asDouble();
+        // driveConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kDriveGearRatio.asDouble();
         driveConfigs.Slot0.kP = SwerveModuleConstants.kDrivePID.kp();
         driveConfigs.Slot0.kI = SwerveModuleConstants.kDrivePID.ki();
         driveConfigs.Slot0.kD = SwerveModuleConstants.kDrivePID.kd();
+        driveConfigs.Slot0.kS = SwerveModuleConstants.kDriveFeedForward.ks();
+        driveConfigs.Slot0.kV = SwerveModuleConstants.kDriveFeedForward.kv();
+        driveConfigs.Slot0.kA = SwerveModuleConstants.kDriveFeedForward.ka();
         m_drive.getConfigurator().apply(driveConfigs);
 
         TalonFXConfiguration turnConfigs = new TalonFXConfiguration();
         turnConfigs.CurrentLimits.SupplyCurrentLimit = SwerveModuleConstants.kTurnSupplyCurrentLimit;
         turnConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
-        turnConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kTurnGearRatio;
+        // turnConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kTurnGearRatio;
         turnConfigs.Slot0.kP = SwerveModuleConstants.kTurnPID.kp();
         turnConfigs.Slot0.kI = SwerveModuleConstants.kTurnPID.ki();
         turnConfigs.Slot0.kD = SwerveModuleConstants.kTurnPID.kd();
