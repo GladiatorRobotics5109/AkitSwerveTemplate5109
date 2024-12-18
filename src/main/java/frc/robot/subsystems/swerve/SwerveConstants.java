@@ -54,7 +54,7 @@ public final class SwerveConstants {
         // 0
         // );
 
-        public static final FeedforwardConstants kDriveFeedforward = new FeedforwardConstants(0.12, 9.5 / 3);
+        public static final FeedforwardConstants kDriveFeedforward = new FeedforwardConstants(0.15, 9.5 / 3);
         // public static final FeedforwardConstants kDriveFeedForward = new FeedforwardConstants(
         // 0.0091035 * kDriveGearRatio.asDouble(),
         // 0.1546 * kDriveGearRatio.asDouble(),
@@ -62,7 +62,7 @@ public final class SwerveConstants {
         // );
 
         public static final PIDConstants kTurnPID = new PIDConstants(
-            12 / Conversions.rotationsToRadians(1.1), // Volts per radian error
+            12 / Conversions.rotationsToRadians(0.01), // Volts per radian error
             0,
             0,
             PIDConstants.kIZone,
@@ -85,13 +85,13 @@ public final class SwerveConstants {
         // PIDConstants.kVelocityTolerance
         // );
 
-        public static final FeedforwardConstants kTurnFeedforward = new FeedforwardConstants(0, 0);
+        // public static final FeedforwardConstants kTurnFeedforward = new FeedforwardConstants(0, 0);
 
-        // public static final FeedforwardConstants kTurnFeedForward = new FeedforwardConstants(
-        // 0,
-        // 0.24103 * kTurnGearRatio,
-        // 0.013805 * kTurnGearRatio
-        // );
+        public static final FeedforwardConstants kTurnFeedforward = new FeedforwardConstants(
+            0,
+            0.24103 * kTurnGearRatio,
+            0.013805 * kTurnGearRatio
+        );
 
         public static final int kDriveStatorCurrentLimit = 70;
         public static final int kDriveSupplyCurrentLimit = 40;

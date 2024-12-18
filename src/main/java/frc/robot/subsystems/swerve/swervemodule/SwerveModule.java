@@ -110,11 +110,18 @@ public class SwerveModule {
             }
             else {
                 m_io.setDriveVoltage(
-                    m_driveFeedforward.calculate(m_desiredState.speedMetersPerSecond)
-                        + m_drivePID.calculate(m_currentState.speedMetersPerSecond, m_desiredState.speedMetersPerSecond)
+                    m_driveFeedforward.calculate(
+                        Conversions.driveWheelMetersToWheelRadians(m_desiredState.speedMetersPerSecond)
+                    )
+                        + m_drivePID.calculate(
+                            Conversions.driveWheelMetersToWheelRadians(m_currentState.speedMetersPerSecond),
+                            Conversions.driveWheelMetersToWheelRadians(m_desiredState.speedMetersPerSecond)
+                        )
                 );
                 m_io.setTurnVoltage(
-                    m_turnFeedforward.calculate(m_desiredState.speedMetersPerSecond)
+                    m_turnFeedforward.calculate(
+                        m_desiredState.angle.getRadians()
+                    )
                         + m_turnPID.calculate(m_currentState.angle.getRadians(), m_desiredState.angle.getRadians())
                 );
             }
