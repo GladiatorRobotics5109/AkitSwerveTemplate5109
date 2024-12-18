@@ -58,11 +58,13 @@ public class SwerveModuleIOSimTalonFx implements SwerveModuleIO {
         m_driveSim = new DCMotorSim(
             useFOC ? DCMotor.getKrakenX60Foc(1) : DCMotor.getKrakenX60(1),
             SwerveModuleConstants.kDriveGearRatio.asDouble(),
+            // 1,
             0.025
         );
         m_turnSim = new DCMotorSim(
             useFOC ? DCMotor.getKrakenX60Foc(1) : DCMotor.getKrakenX60(1),
             SwerveModuleConstants.kTurnGearRatio,
+            // 1,
             0.004
         );
 
@@ -74,22 +76,25 @@ public class SwerveModuleIOSimTalonFx implements SwerveModuleIO {
         driveConfigs.CurrentLimits.SupplyCurrentLimit = SwerveModuleConstants.kDriveSupplyCurrentLimit;
         driveConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
         // TODO: test new ratios
-        // driveConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kDriveGearRatio.asDouble();
+        driveConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kDriveGearRatio.asDouble();
         driveConfigs.Slot0.kP = SwerveModuleConstants.kDrivePID.kp();
         driveConfigs.Slot0.kI = SwerveModuleConstants.kDrivePID.ki();
         driveConfigs.Slot0.kD = SwerveModuleConstants.kDrivePID.kd();
-        driveConfigs.Slot0.kS = SwerveModuleConstants.kDriveFeedForward.ks();
-        driveConfigs.Slot0.kV = SwerveModuleConstants.kDriveFeedForward.kv();
-        driveConfigs.Slot0.kA = SwerveModuleConstants.kDriveFeedForward.ka();
+        driveConfigs.Slot0.kS = SwerveModuleConstants.kDriveFeedforward.ks();
+        driveConfigs.Slot0.kV = SwerveModuleConstants.kDriveFeedforward.kv();
+        driveConfigs.Slot0.kA = SwerveModuleConstants.kDriveFeedforward.ka();
         m_drive.getConfigurator().apply(driveConfigs);
 
         TalonFXConfiguration turnConfigs = new TalonFXConfiguration();
         turnConfigs.CurrentLimits.SupplyCurrentLimit = SwerveModuleConstants.kTurnSupplyCurrentLimit;
         turnConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
-        // turnConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kTurnGearRatio;
+        turnConfigs.Feedback.SensorToMechanismRatio = SwerveModuleConstants.kTurnGearRatio;
         turnConfigs.Slot0.kP = SwerveModuleConstants.kTurnPID.kp();
         turnConfigs.Slot0.kI = SwerveModuleConstants.kTurnPID.ki();
         turnConfigs.Slot0.kD = SwerveModuleConstants.kTurnPID.kd();
+        turnConfigs.Slot0.kS = SwerveModuleConstants.kTurnFeedforward.ks();
+        turnConfigs.Slot0.kV = SwerveModuleConstants.kTurnFeedforward.kv();
+        turnConfigs.Slot0.kA = SwerveModuleConstants.kTurnFeedforward.ka();
         m_turn.getConfigurator().apply(turnConfigs);
 
         m_driveVelocity = new VelocityVoltage(0);
@@ -126,8 +131,10 @@ public class SwerveModuleIOSimTalonFx implements SwerveModuleIO {
             SwerveConstants.kOdometryFrequencyHz,
             m_signalDrivePosition,
             m_signalDriveVelocity,
+            m_signalDriveAcceleration,
             m_signalTurnPosition,
-            m_signalTurnVelocity
+            m_signalTurnVelocity,
+            m_signalTurnAcceleration
         );
     }
 
@@ -172,13 +179,13 @@ public class SwerveModuleIOSimTalonFx implements SwerveModuleIO {
             m_signalTurnSupplyCurrent
         );
 
-        inputs.drivePositionRad = Conversions.driveMotorRotationsToDriveWheelRadians(
+        inputs.drivePositionRad = Conversions.rotationsToRadians(
             m_signalDrivePosition.getValueAsDouble()
         );
-        inputs.driveVelocityRadPerSec = Conversions.driveMotorRotationsToDriveWheelRadians(
+        inputs.driveVelocityRadPerSec = Conversions.rotationsToRadians(
             m_signalDriveVelocity.getValueAsDouble()
         );
-        inputs.driveAccelerationRadPerSecPerSec = Conversions.driveMotorRotationsToDriveWheelRadians(
+        inputs.driveAccelerationRadPerSecPerSec = Conversions.rotationsToRadians(
             m_signalDriveAcceleration.getValueAsDouble()
         );
         inputs.driveTempCelsius = m_signalDriveTemp.getValueAsDouble();
@@ -187,13 +194,13 @@ public class SwerveModuleIOSimTalonFx implements SwerveModuleIO {
         inputs.driveStatorCurrentAmps = m_signalDriveStatorCurrent.getValueAsDouble();
         inputs.driveSupplyCurrentAmps = m_signalDriveSupplyCurrent.getValueAsDouble();
 
-        inputs.turnPositionRad = Conversions.turnMotorRotationsToDriveWheelRadians(
+        inputs.turnPositionRad = Conversions.rotationsToRadians(
             m_signalTurnPosition.getValueAsDouble()
         );
-        inputs.turnVelocityRadPerSec = Conversions.turnMotorRotationsToDriveWheelRadians(
+        inputs.turnVelocityRadPerSec = Conversions.rotationsToRadians(
             m_signalTurnVelocity.getValueAsDouble()
         );
-        inputs.turnAccelerationRadPerSecPerSec = Conversions.turnMotorRotationsToDriveWheelRadians(
+        inputs.turnAccelerationRadPerSecPerSec = Conversions.rotationsToRadians(
             m_signalTurnAcceleration.getValueAsDouble()
         );
         inputs.turnTempCelsius = m_signalTurnTemp.getValueAsDouble();

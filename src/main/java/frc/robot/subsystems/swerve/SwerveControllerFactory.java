@@ -2,14 +2,18 @@ package frc.robot.subsystems.swerve;
 
 import java.util.function.DoubleSupplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.SwerveConstants.SwerveDriveConfiguration;
+import frc.robot.subsystems.swerve.swervemodule.SwerveModule;
 
 public final class SwerveControllerFactory {
     private SwerveControllerFactory() {
@@ -119,5 +123,37 @@ public final class SwerveControllerFactory {
             rot,
             superSpeed
         );
+    }
+
+    public static SysIdRoutine makeSysIdTurn(SwerveSubsystem swerve, int modNum) {
+        SwerveModule module = swerve.getSwerveModules()[modNum];
+
+        var routine = new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("SysIdTestState Mod" + modNum, state.toString())
+            ),
+            new SysIdRoutine.Mechanism((volts) -> module.setTurnVoltage(volts.in(Units.Volts)), null, swerve)
+        );
+
+        return routine;
+    }
+
+    public static SysIdRoutine makeSysIdDrive(SwerveSubsystem swerve, int modNum) {
+        SwerveModule module = swerve.getSwerveModules()[modNum];
+
+        var routine = new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("SysIdTestState Mod" + modNum, state.toString())
+            ),
+            new SysIdRoutine.Mechanism((volts) -> module.setDriveVoltage(volts.in(Units.Volts)), null, swerve)
+        );
+
+        return routine;
     }
 }

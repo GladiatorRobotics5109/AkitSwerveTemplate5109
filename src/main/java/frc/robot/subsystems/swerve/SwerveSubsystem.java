@@ -207,6 +207,20 @@ public class SwerveSubsystem extends SubsystemBase {
         };
     }
 
+    /**
+     * Should be used for debug/testing purposes only
+     *
+     * @return
+     */
+    public SwerveModule[] getSwerveModules() {
+        return new SwerveModule[] {
+            m_moduleFL,
+            m_moduleFR,
+            m_moduleBL,
+            m_moduleBR
+        };
+    }
+
     public void setController(Command controller) {
         if (!controller.hasRequirement(this)) {
             DriverStation.reportWarning("Swerve Controller Command does not require this subsystem!", true);

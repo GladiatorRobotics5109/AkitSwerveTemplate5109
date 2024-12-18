@@ -18,7 +18,7 @@ import frc.robot.util.Conversions;
 public final class SwerveConstants {
     public static final class SwerveModuleConstants {
         /* Use PID controller on motor controllers */
-        public static final boolean kUseMotorPID = false;
+        public static final boolean kUseMotorPID = true;
         /* Use FOC on TalonFX */
         public static final boolean kUseFOC = false;
 
@@ -48,8 +48,18 @@ public final class SwerveConstants {
             0,
             0
         );
+        // public static final PIDConstants kDrivePID = new PIDConstants(
+        // 0.026251 * kDriveGearRatio.asDouble(), // Volts per m/s error
+        // 0,
+        // 0
+        // );
 
-        public static final FeedforwardConstants kDriveFeedForward = new FeedforwardConstants(0.12, 9.5 / 3);
+        public static final FeedforwardConstants kDriveFeedforward = new FeedforwardConstants(0.12, 9.5 / 3);
+        // public static final FeedforwardConstants kDriveFeedForward = new FeedforwardConstants(
+        // 0.0091035 * kDriveGearRatio.asDouble(),
+        // 0.1546 * kDriveGearRatio.asDouble(),
+        // 0.0055267 * kDriveGearRatio.asDouble()
+        // );
 
         public static final PIDConstants kTurnPID = new PIDConstants(
             12 / Conversions.rotationsToRadians(1.1), // Volts per radian error
@@ -63,10 +73,34 @@ public final class SwerveConstants {
             PIDConstants.kVelocityTolerance
         );
 
+        // public static final PIDConstants kTurnPID = new PIDConstants(
+        // 0.096535 * kTurnGearRatio,
+        // 0,
+        // 0,
+        // PIDConstants.kIZone,
+        // true,
+        // -Math.PI,
+        // Math.PI,
+        // PIDConstants.kPositionTolerance,
+        // PIDConstants.kVelocityTolerance
+        // );
+
+        public static final FeedforwardConstants kTurnFeedforward = new FeedforwardConstants(0, 0);
+
+        // public static final FeedforwardConstants kTurnFeedForward = new FeedforwardConstants(
+        // 0,
+        // 0.24103 * kTurnGearRatio,
+        // 0.013805 * kTurnGearRatio
+        // );
+
         public static final int kDriveStatorCurrentLimit = 70;
         public static final int kDriveSupplyCurrentLimit = 40;
 
         public static final int kTurnSupplyCurrentLimit = 30;
+
+        public static final Measure<Velocity<Distance>> kDriveMaxFreeSpeed = Units.FeetPerSecond.of(12.9);
+        // TODO: verify this
+        public static final Measure<Velocity<Angle>> kTurnMaxRotationSpeed = Units.RotationsPerSecond.of(2);
     }
 
     public static final boolean kTeleopFieldRelative = true;
@@ -78,7 +112,7 @@ public final class SwerveConstants {
     public static final SwerveDriveConfiguration kTeleopConfig = new SwerveDriveConfiguration(
         // Units.MetersPerSecond.of(0.5),
         Units.MetersPerSecond.of(3),
-        Units.FeetPerSecond.of(12.9), // Theoretically max achievable speed
+        SwerveModuleConstants.kDriveMaxFreeSpeed, // Theoretically max achievable speed
         // Units.RotationsPerSecond.of(0.2),
         Units.RotationsPerSecond.of(0.75),
         Units.RotationsPerSecond.of(1.25),

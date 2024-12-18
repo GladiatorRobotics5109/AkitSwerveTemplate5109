@@ -29,7 +29,8 @@ public class SwerveModule {
     private LoggedPIDController m_drivePID;
     private LoggedPIDController m_turnPID;
 
-    private SimpleMotorFeedforward m_driveFeedForward;
+    private SimpleMotorFeedforward m_driveFeedforward;
+    private SimpleMotorFeedforward m_turnFeedforward;
 
     public SwerveModule(int id, SwerveModuleIO io, boolean useMotorPID) {
         m_id = id;
@@ -48,7 +49,9 @@ public class SwerveModule {
             m_drivePID = SwerveModuleConstants.kDrivePID.getLoggedPIDController(m_logPath + "/drivePID");
             m_turnPID = SwerveModuleConstants.kTurnPID.getLoggedPIDController(m_logPath + "/turnPID");
             // TODO: add feed forward to onboard motor controllers
-            m_driveFeedForward = SwerveModuleConstants.kDriveFeedForward.get();
+            m_driveFeedforward = SwerveModuleConstants.kDriveFeedforward.get();
+            m_turnFeedforward = SwerveModuleConstants.kTurnFeedforward.get();
+
             // m_drivePID = SwerveModuleConstants.kDrivePID.getPIDController();
             // m_turnPID = SwerveModuleConstants.kTurnPID.getPIDController();
         }
@@ -65,6 +68,14 @@ public class SwerveModule {
 
     public SwerveModuleState setDesiredState(SwerveModuleState desiredState) {
         return setDesiredState(desiredState, true);
+    }
+
+    public void setDriveVoltage(double volts) {
+        m_io.setDriveVoltage(volts);
+    }
+
+    public void setTurnVoltage(double volts) {
+        m_io.setTurnVoltage(volts);
     }
 
     public Rotation2d getTurnAngle() {
@@ -99,11 +110,12 @@ public class SwerveModule {
             }
             else {
                 m_io.setDriveVoltage(
-                    m_driveFeedForward.calculate(m_desiredState.speedMetersPerSecond)
+                    m_driveFeedforward.calculate(m_desiredState.speedMetersPerSecond)
                         + m_drivePID.calculate(m_currentState.speedMetersPerSecond, m_desiredState.speedMetersPerSecond)
                 );
                 m_io.setTurnVoltage(
-                    m_turnPID.calculate(m_currentState.angle.getRadians(), m_desiredState.angle.getRadians())
+                    m_turnFeedforward.calculate(m_desiredState.speedMetersPerSecond)
+                        + m_turnPID.calculate(m_currentState.angle.getRadians(), m_desiredState.angle.getRadians())
                 );
             }
         }

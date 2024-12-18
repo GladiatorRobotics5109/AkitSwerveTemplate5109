@@ -9,7 +9,6 @@ import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.Mo
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import frc.robot.subsystems.swerve.SwerveControllerFactory;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
@@ -51,6 +50,16 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.none();
+        return null;
+        // return Commands.sequence(
+        // SwerveControllerFactory.makeSysIdDrive(m_swerve, 0).quasistatic(SysIdRoutine.Direction.kForward),
+        // Commands.waitSeconds(2),
+        // SwerveControllerFactory.makeSysIdDrive(m_swerve, 0).quasistatic(SysIdRoutine.Direction.kReverse),
+        // Commands.waitSeconds(2),
+        // SwerveControllerFactory.makeSysIdDrive(m_swerve, 0).dynamic(SysIdRoutine.Direction.kForward),
+        // Commands.waitSeconds(2),
+        // SwerveControllerFactory.makeSysIdDrive(m_swerve, 0).dynamic(SysIdRoutine.Direction.kReverse),
+        // Commands.print("-- SysIdCompleted! -- ")
+        // );
     }
 }
