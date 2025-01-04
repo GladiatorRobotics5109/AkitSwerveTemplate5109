@@ -15,8 +15,8 @@ import frc.robot.Constants;
 import frc.robot.subsystems.swerve.SwerveConstants.SwerveDriveConfiguration;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModule;
 
-public final class SwerveControllerFactory {
-    private SwerveControllerFactory() {
+public final class SwerveCommandFactory {
+    private SwerveCommandFactory() {
         throw new UnsupportedOperationException("This is a utility class!");
     }
 

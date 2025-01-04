@@ -13,12 +13,11 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
-import frc.robot.util.Conversions;
 
 public final class SwerveConstants {
     public static final class SwerveModuleConstants {
         /* Use PID controller on motor controllers */
-        public static final boolean kUseMotorPID = true;
+        public static final boolean kUseMotorPID = false;
         /* Use FOC on TalonFX */
         public static final boolean kUseFOC = false;
 
@@ -44,7 +43,7 @@ public final class SwerveConstants {
 
         // Units in module space not motor space
         public static final PIDConstants kDrivePID = new PIDConstants(
-            10 / 3, // Volts per m/s error
+            10 / 5, // Volts per m/s error
             0,
             0
         );
@@ -54,7 +53,8 @@ public final class SwerveConstants {
         // 0
         // );
 
-        public static final FeedforwardConstants kDriveFeedforward = new FeedforwardConstants(0.15, 9.5 / 3);
+        // public static final FeedforwardConstants kDriveFeedforward = new FeedforwardConstants(0.15, 9.5 / 3);
+        public static final FeedforwardConstants kDriveFeedforward = new FeedforwardConstants(0, 0);
         // public static final FeedforwardConstants kDriveFeedForward = new FeedforwardConstants(
         // 0.0091035 * kDriveGearRatio.asDouble(),
         // 0.1546 * kDriveGearRatio.asDouble(),
@@ -62,7 +62,8 @@ public final class SwerveConstants {
         // );
 
         public static final PIDConstants kTurnPID = new PIDConstants(
-            12 / Conversions.rotationsToRadians(0.01), // Volts per radian error
+            0.0,
+            // 12 / Conversions.rotationsToRadians(0.01), // Volts per radian error
             0,
             0,
             PIDConstants.kIZone,
@@ -85,13 +86,13 @@ public final class SwerveConstants {
         // PIDConstants.kVelocityTolerance
         // );
 
-        // public static final FeedforwardConstants kTurnFeedforward = new FeedforwardConstants(0, 0);
+        public static final FeedforwardConstants kTurnFeedforward = new FeedforwardConstants(0, 0);
 
-        public static final FeedforwardConstants kTurnFeedforward = new FeedforwardConstants(
-            0,
-            0.24103 * kTurnGearRatio,
-            0.013805 * kTurnGearRatio
-        );
+        // public static final FeedforwardConstants kTurnFeedforward = new FeedforwardConstants(
+        // 0,
+        // 0.24103 * kTurnGearRatio,
+        // 0.013805 * kTurnGearRatio
+        // );
 
         public static final int kDriveStatorCurrentLimit = 70;
         public static final int kDriveSupplyCurrentLimit = 40;

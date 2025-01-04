@@ -9,8 +9,8 @@ import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.Mo
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
-import frc.robot.subsystems.swerve.SwerveControllerFactory;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import frc.robot.subsystems.swerve.SwerveCommandFactory;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
 
 public class RobotContainer {
@@ -18,8 +18,8 @@ public class RobotContainer {
     private final SwerveSubsystem m_swerve;
 
     // private final CommandXboxController m_driverController;
-    // private final CommandPS5Controller m_driverController;
-    private final CommandGenericHID m_keyboard;
+    private final CommandPS5Controller m_driverController;
+    // private final CommandGenericHID m_keyboard;
 
     public RobotContainer() {
         m_swerve = new SwerveSubsystem();
@@ -28,25 +28,25 @@ public class RobotContainer {
         }
 
         // m_driverController = new CommandXboxController(0);
-        // m_driverController = new CommandPS5Controller(0);
-        m_keyboard = new CommandGenericHID(0);
+        m_driverController = new CommandPS5Controller(0);
+        // m_keyboard = new CommandGenericHID(0);
 
         configureBindings();
     }
 
     private void configureBindings() {
-        // m_swerve.setDefaultCommand(SwerveControllerFactory.makeTeleop(m_swerve, m_driverController));
-        m_swerve.setDefaultCommand(
-            SwerveControllerFactory.makeTeleop(
-                m_swerve,
-                // () -> 0,
-                // () -> 1,
-                () -> m_keyboard.getRawAxis(0),
-                () -> -m_keyboard.getRawAxis(1),
-                () -> m_keyboard.getRawAxis(2),
-                () -> 0
-            )
-        );
+        m_swerve.setDefaultCommand(SwerveCommandFactory.makeTeleop(m_swerve, m_driverController));
+        // m_swerve.setDefaultCommand(
+        // SwerveCommandFactory.makeTeleop(
+        // m_swerve,
+        // // () -> 0,
+        // // () -> 1,
+        // () -> m_keyboard.getRawAxis(0),
+        // () -> -m_keyboard.getRawAxis(1),
+        // () -> m_keyboard.getRawAxis(2),
+        // () -> 0
+        // )
+        // );
     }
 
     public Command getAutonomousCommand() {

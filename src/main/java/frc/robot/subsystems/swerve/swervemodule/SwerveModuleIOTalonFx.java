@@ -15,8 +15,8 @@ import frc.robot.subsystems.swerve.SwerveConstants.SwerveModuleConstants;
 import frc.robot.util.Conversions;
 
 public class SwerveModuleIOTalonFx implements SwerveModuleIO {
-    private final TalonFX m_drive;
-    private final TalonFX m_turn;
+    protected final TalonFX m_drive;
+    protected final TalonFX m_turn;
 
     private final boolean m_useFOC;
 
@@ -114,8 +114,10 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
             SwerveConstants.kOdometryFrequencyHz,
             m_signalDrivePosition,
             m_signalDriveVelocity,
+            m_signalDriveAcceleration,
             m_signalTurnPosition,
-            m_signalTurnVelocity
+            m_signalTurnVelocity,
+            m_signalTurnAcceleration
         );
     }
 
