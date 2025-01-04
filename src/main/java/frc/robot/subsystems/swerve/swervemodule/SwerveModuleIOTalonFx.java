@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.swerve.SwerveConstants;
@@ -61,6 +62,7 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
         driveConfigs.Slot0.kP = Conversions.radiansToRotations(SwerveModuleConstants.kDrivePID.kp());
         driveConfigs.Slot0.kI = Conversions.radiansToRotations(SwerveModuleConstants.kDrivePID.ki());
         driveConfigs.Slot0.kD = Conversions.radiansToRotations(SwerveModuleConstants.kDrivePID.kd());
+        driveConfigs.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseVelocitySign;
         driveConfigs.Slot0.kS = Conversions.radiansToRotations(SwerveModuleConstants.kDriveFeedforward.ks());
         driveConfigs.Slot0.kV = Conversions.radiansToRotations(SwerveModuleConstants.kDriveFeedforward.kv());
         driveConfigs.Slot0.kA = Conversions.radiansToRotations(SwerveModuleConstants.kDriveFeedforward.ka());
