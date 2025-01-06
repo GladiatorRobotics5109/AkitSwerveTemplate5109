@@ -11,6 +11,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.*;
 import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.subsystems.swerve.SwerveConstants.SwerveModuleConstants;
 import frc.robot.util.Conversions;
@@ -27,23 +29,23 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
     private final VelocityVoltage m_driveVelocity;
     private final PositionVoltage m_turnPosition;
 
-    private final StatusSignal<Double> m_signalDrivePosition;
-    private final StatusSignal<Double> m_signalDriveVelocity;
-    private final StatusSignal<Double> m_signalDriveAcceleration;
-    private final StatusSignal<Double> m_signalDriveTemp;
-    private final StatusSignal<Double> m_signalDriveAppliedVoltage;
-    private final StatusSignal<Double> m_signalDriveSupplyVoltage;
-    private final StatusSignal<Double> m_signalDriveStatorCurrent;
-    private final StatusSignal<Double> m_signalDriveSupplyCurrent;
+    private final StatusSignal<Angle> m_signalDrivePosition;
+    private final StatusSignal<AngularVelocity> m_signalDriveVelocity;
+    private final StatusSignal<AngularAcceleration> m_signalDriveAcceleration;
+    private final StatusSignal<Temperature> m_signalDriveTemp;
+    private final StatusSignal<Voltage> m_signalDriveAppliedVoltage;
+    private final StatusSignal<Voltage> m_signalDriveSupplyVoltage;
+    private final StatusSignal<Current> m_signalDriveStatorCurrent;
+    private final StatusSignal<Current> m_signalDriveSupplyCurrent;
 
-    private final StatusSignal<Double> m_signalTurnPosition;
-    private final StatusSignal<Double> m_signalTurnVelocity;
-    private final StatusSignal<Double> m_signalTurnAcceleration;
-    private final StatusSignal<Double> m_signalTurnTemp;
-    private final StatusSignal<Double> m_signalTurnAppliedVoltage;
-    private final StatusSignal<Double> m_signalTurnSupplyVoltage;
-    private final StatusSignal<Double> m_signalTurnStatorCurrent;
-    private final StatusSignal<Double> m_signalTurnSupplyCurrent;
+    private final StatusSignal<Angle> m_signalTurnPosition;
+    private final StatusSignal<AngularVelocity> m_signalTurnVelocity;
+    private final StatusSignal<AngularAcceleration> m_signalTurnAcceleration;
+    private final StatusSignal<Temperature> m_signalTurnTemp;
+    private final StatusSignal<Voltage> m_signalTurnAppliedVoltage;
+    private final StatusSignal<Voltage> m_signalTurnSupplyVoltage;
+    private final StatusSignal<Current> m_signalTurnStatorCurrent;
+    private final StatusSignal<Current> m_signalTurnSupplyCurrent;
 
     public SwerveModuleIOTalonFx(int drivePort, int turnPort, boolean useFOC) {
         m_drive = new TalonFX(drivePort);
@@ -88,8 +90,10 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
         m_turnPosition = new PositionVoltage(0);
         m_turnPosition.EnableFOC = m_useFOC;
 
-        m_driveVoltage = new VoltageOut(0, m_useFOC, false, false, false);
-        m_turnVoltage = new VoltageOut(0, m_useFOC, false, false, false);
+        m_driveVoltage = new VoltageOut(0);
+        m_driveVoltage.EnableFOC = m_useFOC;
+        m_turnVoltage = new VoltageOut(0);
+        m_turnVoltage.EnableFOC = m_useFOC;
 
         m_signalDrivePosition = m_drive.getPosition();
         m_signalDriveVelocity = m_drive.getVelocity();
@@ -164,35 +168,27 @@ public class SwerveModuleIOTalonFx implements SwerveModuleIO {
             m_signalTurnSupplyCurrent
         );
 
-        inputs.drivePositionRad = Conversions.rotationsToRadians(
-            m_signalDrivePosition.getValueAsDouble()
+        inputs.drivePositionRad = m_signalDrivePosition.getValue().in(Units.Radians);
+        inputs.driveVelocityRadPerSec = m_signalDriveVelocity.getValue().in(Units.RadiansPerSecond);
+        inputs.driveAccelerationRadPerSecPerSec = m_signalDriveAcceleration.getValue().in(
+            Units.RadiansPerSecondPerSecond
         );
-        inputs.driveVelocityRadPerSec = Conversions.rotationsToRadians(
-            m_signalDriveVelocity.getValueAsDouble()
-        );
-        inputs.driveAccelerationRadPerSecPerSec = Conversions.rotationsToRadians(
-            m_signalDriveAcceleration.getValueAsDouble()
-        );
-        inputs.driveTempCelsius = m_signalDriveTemp.getValueAsDouble();
-        inputs.driveAppliedVolts = m_signalDriveAppliedVoltage.getValueAsDouble();
-        inputs.driveSupplyVoltage = m_signalDriveSupplyVoltage.getValueAsDouble();
-        inputs.driveStatorCurrentAmps = m_signalDriveStatorCurrent.getValueAsDouble();
-        inputs.driveSupplyCurrentAmps = m_signalDriveSupplyCurrent.getValueAsDouble();
+        inputs.driveTempCelsius = m_signalDriveTemp.getValue().in(Units.Celsius);
+        inputs.driveAppliedVolts = m_signalDriveAppliedVoltage.getValue().in(Units.Volts);
+        inputs.driveSupplyVoltage = m_signalDriveSupplyVoltage.getValue().in(Units.Volts);
+        inputs.driveStatorCurrentAmps = m_signalDriveStatorCurrent.getValue().in(Units.Amps);
+        inputs.driveSupplyCurrentAmps = m_signalDriveSupplyCurrent.getValue().in(Units.Amps);
 
-        inputs.turnPositionRad = Conversions.rotationsToRadians(
-            m_signalTurnPosition.getValueAsDouble()
+        inputs.turnPositionRad = m_signalTurnPosition.getValue().in(Units.Radians);
+        inputs.turnVelocityRadPerSec = m_signalTurnVelocity.getValue().in(Units.RadiansPerSecond);
+        inputs.turnAccelerationRadPerSecPerSec = m_signalTurnAcceleration.getValue().in(
+            Units.RadiansPerSecondPerSecond
         );
-        inputs.turnVelocityRadPerSec = Conversions.rotationsToRadians(
-            m_signalTurnVelocity.getValueAsDouble()
-        );
-        inputs.turnAccelerationRadPerSecPerSec = Conversions.rotationsToRadians(
-            m_signalTurnAcceleration.getValueAsDouble()
-        );
-        inputs.turnTempCelsius = m_signalTurnTemp.getValueAsDouble();
-        inputs.turnAppliedVolts = m_signalTurnAppliedVoltage.getValueAsDouble();
-        inputs.turnSupplyVoltage = m_signalTurnSupplyVoltage.getValueAsDouble();
-        inputs.turnStatorCurrentAmps = m_signalTurnStatorCurrent.getValueAsDouble();
-        inputs.turnSupplyCurrentAmps = m_signalTurnSupplyCurrent.getValueAsDouble();
+        inputs.turnTempCelsius = m_signalTurnTemp.getValue().in(Units.Celsius);
+        inputs.turnAppliedVolts = m_signalTurnAppliedVoltage.getValue().in(Units.Volts);
+        inputs.turnSupplyVoltage = m_signalTurnSupplyVoltage.getValue().in(Units.Volts);
+        inputs.turnStatorCurrentAmps = m_signalTurnStatorCurrent.getValue().in(Units.Amps);
+        inputs.turnSupplyCurrentAmps = m_signalTurnSupplyCurrent.getValue().in(Units.Amps);
     }
 
     @Override

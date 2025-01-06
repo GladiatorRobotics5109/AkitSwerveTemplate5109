@@ -8,11 +8,9 @@ import com.github.gladiatorrobotics5109.gladiatorroboticslib.math.controller.PID
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.measure.Units;
-import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.util.Conversions;
 
 public final class SwerveConstants {
@@ -103,6 +101,9 @@ public final class SwerveConstants {
         // TODO: verify this
         public static final AngularVelocity kTurnMaxRotationSpeed = Units.RotationsPerSecond.of(2);
     }
+
+    // TODO: change this
+    public static final int kPigeonPort = 10;
 
     public static final boolean kTeleopFieldRelative = true;
 
