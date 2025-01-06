@@ -24,7 +24,7 @@ public class RobotContainer {
     public RobotContainer() {
         m_swerve = new SwerveSubsystem();
         if (Constants.kCurrentMode == Mode.REAL) {
-            powerDistribution = new PowerDistribution(Constants.kPDPPort, ModuleType.kAutomatic);
+            powerDistribution = new PowerDistribution(Constants.kPDPPort, ModuleType.kCTRE);
         }
 
         m_driverController = new CommandXboxController(0);

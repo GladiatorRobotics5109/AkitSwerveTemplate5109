@@ -8,11 +8,9 @@ import com.github.gladiatorrobotics5109.gladiatorroboticslib.math.controller.PID
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.util.Conversions;
 
 public final class SwerveConstants {
@@ -99,10 +97,13 @@ public final class SwerveConstants {
 
         public static final int kTurnSupplyCurrentLimit = 30;
 
-        public static final Measure<Velocity<Distance>> kDriveMaxFreeSpeed = Units.FeetPerSecond.of(12.9);
+        public static final LinearVelocity kDriveMaxFreeSpeed = Units.FeetPerSecond.of(12.9);
         // TODO: verify this
-        public static final Measure<Velocity<Angle>> kTurnMaxRotationSpeed = Units.RotationsPerSecond.of(2);
+        public static final AngularVelocity kTurnMaxRotationSpeed = Units.RotationsPerSecond.of(2);
     }
+
+    // TODO: change this
+    public static final int kPigeonPort = 10;
 
     public static final boolean kTeleopFieldRelative = true;
 
@@ -122,14 +123,14 @@ public final class SwerveConstants {
 
     // Provides a way to describe the configuration of the swerve subsystem (like drive speeds) with values that may
     // change throughout a match (like auto -> teleop)
-    public static final record SwerveDriveConfiguration(Measure<Velocity<Distance>> defaultDriveSpeed, Measure<Velocity<Distance>> maxDriveSpeed, Measure<Velocity<Angle>> defaultRotationSpeed, Measure<Velocity<Angle>> maxRotationSpeed, boolean fieldRelative) {
-        public Measure<Velocity<Distance>> evalDriveSpeed(double t) {
+    public static final record SwerveDriveConfiguration(LinearVelocity defaultDriveSpeed, LinearVelocity maxDriveSpeed, AngularVelocity defaultRotationSpeed, AngularVelocity maxRotationSpeed, boolean fieldRelative) {
+        public LinearVelocity evalDriveSpeed(double t) {
             // l(t) = (f / i) * t + i
             double slope = maxDriveSpeed.in(Units.MetersPerSecond) / defaultDriveSpeed.in(Units.MetersPerSecond);
             return defaultDriveSpeed.plus(Units.MetersPerSecond.of(slope * MathUtil.clamp(t, 0, 1)));
         }
 
-        public Measure<Velocity<Angle>> evalRotationSpeed(double t) {
+        public AngularVelocity evalRotationSpeed(double t) {
             // l(t) = (f / i) * t + i
             double slope = maxRotationSpeed.in(Units.RadiansPerSecond) / defaultRotationSpeed.in(Units.RadiansPerSecond);
             return defaultRotationSpeed.plus(Units.RotationsPerSecond.of(slope * MathUtil.clamp(t, 0, 1)));

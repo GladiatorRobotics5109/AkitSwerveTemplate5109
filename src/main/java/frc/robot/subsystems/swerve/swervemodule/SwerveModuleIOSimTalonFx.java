@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve.swervemodule;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.SwerveConstants.SwerveModuleConstants;
@@ -16,17 +17,35 @@ public class SwerveModuleIOSimTalonFx extends SwerveModuleIOTalonFx {
         super(drivePort, turnPort, useFOC);
 
         m_driveSim = new DCMotorSim(
-            useFOC ? DCMotor.getKrakenX60Foc(1) : DCMotor.getKrakenX60(1),
-            SwerveModuleConstants.kDriveGearRatio.asDouble(),
-            // 1,
-            0.025
+            LinearSystemId.createDCMotorSystem(
+                DCMotor.getKrakenX60(1),
+                SwerveModuleConstants.kDriveFeedforward.kv(),
+                SwerveModuleConstants.kDriveFeedforward.ka()
+            ),
+            DCMotor.getKrakenX60(1)
         );
+
         m_turnSim = new DCMotorSim(
-            useFOC ? DCMotor.getKrakenX60Foc(1) : DCMotor.getKrakenX60(1),
-            SwerveModuleConstants.kTurnGearRatio,
-            // 1,
-            0.004
+            LinearSystemId.createDCMotorSystem(
+                DCMotor.getKrakenX60(1),
+                SwerveModuleConstants.kTurnFeedforward.kv(),
+                SwerveModuleConstants.kTurnFeedforward.ka()
+            ),
+            DCMotor.getKrakenX60(1)
         );
+
+        // m_driveSim = new DCMotorSim(
+        // useFOC ? DCMotor.getKrakenX60Foc(1) : DCMotor.getKrakenX60(1),
+        // SwerveModuleConstants.kDriveGearRatio.asDouble(),
+        // // 1,
+        // 0.025
+        // );
+        // m_turnSim = new DCMotorSim(
+        // useFOC ? DCMotor.getKrakenX60Foc(1) : DCMotor.getKrakenX60(1),
+        // SwerveModuleConstants.kTurnGearRatio,
+        // // 1,
+        // 0.004
+        // );
     }
 
     @Override
