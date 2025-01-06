@@ -29,7 +29,8 @@ public class SwerveModule {
     private LoggedPIDController m_drivePID;
     private LoggedPIDController m_turnPID;
 
-    private SimpleMotorFeedforward m_driveFeedForward;
+    private SimpleMotorFeedforward m_driveFeedforward;
+    private SimpleMotorFeedforward m_turnFeedforward;
 
     public SwerveModule(int id, SwerveModuleIO io, boolean useMotorPID) {
         m_id = id;
@@ -47,9 +48,8 @@ public class SwerveModule {
         if (!m_useMotorPID) {
             m_drivePID = SwerveModuleConstants.kDrivePID.getLoggedPIDController(m_logPath + "/drivePID");
             m_turnPID = SwerveModuleConstants.kTurnPID.getLoggedPIDController(m_logPath + "/turnPID");
-            m_driveFeedForward = new SimpleMotorFeedforward(0.12, 0);
-            // m_drivePID = SwerveModuleConstants.kDrivePID.getPIDController();
-            // m_turnPID = SwerveModuleConstants.kTurnPID.getPIDController();
+            m_driveFeedforward = SwerveModuleConstants.kDriveFeedforward.get();
+            m_turnFeedforward = SwerveModuleConstants.kTurnFeedforward.get();
         }
     }
 
@@ -66,6 +66,14 @@ public class SwerveModule {
         return setDesiredState(desiredState, true);
     }
 
+    public void setDriveVoltage(double volts) {
+        m_io.setDriveVoltage(volts);
+    }
+
+    public void setTurnVoltage(double volts) {
+        m_io.setTurnVoltage(volts);
+    }
+
     public Rotation2d getTurnAngle() {
         // return m_desiredState.angle;
         return m_currentState.angle;
@@ -80,6 +88,7 @@ public class SwerveModule {
     }
 
     public void periodic() {
+        m_io.periodic();
         m_io.updateInputs(m_inputs);
         Logger.processInputs(m_logPath, m_inputs);
 
@@ -88,21 +97,28 @@ public class SwerveModule {
             m_io.setTurnVoltage(0);
         }
         else {
-            // Update PID controllers if use them on rio
             if (m_useMotorPID) {
-                m_io.setDriveSpeed(
-                    Conversions.driveWheelMetersToDriveMotorRadians(m_desiredState.speedMetersPerSecond)
+                m_io.setDriveWheelSpeed(
+                    Conversions.driveWheelMetersToWheelRadians(m_desiredState.speedMetersPerSecond)
                 );
 
-                m_io.setTurnPosition(Conversions.driveWheelAngleRotation2dToTurnMotorRotation2d(m_desiredState.angle));
+                m_io.setTurnPosition(m_desiredState.angle);
             }
             else {
                 m_io.setDriveVoltage(
-                    m_driveFeedForward.calculate(m_desiredState.speedMetersPerSecond)
-                        + m_drivePID.calculate(m_currentState.speedMetersPerSecond, m_desiredState.speedMetersPerSecond)
+                    m_driveFeedforward.calculate(
+                        Conversions.driveWheelMetersToWheelRadians(m_desiredState.speedMetersPerSecond)
+                    )
+                        + m_drivePID.calculate(
+                            Conversions.driveWheelMetersToWheelRadians(m_currentState.speedMetersPerSecond),
+                            Conversions.driveWheelMetersToWheelRadians(m_desiredState.speedMetersPerSecond)
+                        )
                 );
                 m_io.setTurnVoltage(
-                    m_turnPID.calculate(m_currentState.angle.getRadians(), m_desiredState.angle.getRadians())
+                    m_turnFeedforward.calculate(
+                        m_desiredState.angle.getRadians()
+                    )
+                        + m_turnPID.calculate(m_currentState.angle.getRadians(), m_desiredState.angle.getRadians())
                 );
             }
         }

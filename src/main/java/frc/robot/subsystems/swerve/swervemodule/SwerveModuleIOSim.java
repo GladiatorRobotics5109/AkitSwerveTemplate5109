@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve.swervemodule;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.SwerveConstants.SwerveModuleConstants;
@@ -15,8 +16,22 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     private double m_turnAppliedVolts;
 
     public SwerveModuleIOSim() {
-        m_drive = new DCMotorSim(DCMotor.getKrakenX60(1), SwerveModuleConstants.kDriveGearRatio.asDouble(), 0.5);
-        m_turn = new DCMotorSim(DCMotor.getKrakenX60(1), SwerveModuleConstants.kTurnGearRatio, 0.004);
+        m_drive = new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(
+                DCMotor.getKrakenX60(1),
+                SwerveModuleConstants.kDriveFeedforward.kv(),
+                SwerveModuleConstants.kDriveFeedforward.ka()
+            ),
+            DCMotor.getKrakenX60(1)
+        );
+
+        m_turn = new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(
+                SwerveModuleConstants.kTurnFeedforward.kv(),
+                SwerveModuleConstants.kTurnFeedforward.ka()
+            ),
+            DCMotor.getKrakenX60(1)
+        );
     }
 
     @Override
@@ -56,7 +71,7 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     }
 
     @Override
-    public void setDriveSpeed(double speedRadPerSec) {}
+    public void setDriveWheelSpeed(double speedRadPerSec) {}
 
     @Override
     public void setTurnPosition(Rotation2d position) {}

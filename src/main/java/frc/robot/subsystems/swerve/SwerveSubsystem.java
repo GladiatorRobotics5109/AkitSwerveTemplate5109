@@ -4,7 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyro;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIO;
-import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIONavX;
+import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIOPigeon;
 import com.github.gladiatorrobotics5109.gladiatorroboticslib.advantagekitutil.loggedgyro.LoggedGyroIOSim;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModule;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIO;
-import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIOSim;
+import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIOSimTalonFx;
 import frc.robot.subsystems.swerve.swervemodule.SwerveModuleIOTalonFx;
 import frc.robot.util.Util;
 
@@ -76,14 +76,50 @@ public class SwerveSubsystem extends SubsystemBase {
                     SwerveConstants.SwerveModuleConstants.kUseMotorPID
                 );
 
-                m_gyro = new LoggedGyro("Subsystems/Swerve/Gyro", new LoggedGyroIONavX());
+                m_gyro = new LoggedGyro("Subsystems/Swerve/Gyro", new LoggedGyroIOPigeon(SwerveConstants.kPigeonPort));
 
                 break;
             case SIM:
-                m_moduleFL = new SwerveModule(0, new SwerveModuleIOSim(), false);
-                m_moduleFR = new SwerveModule(1, new SwerveModuleIOSim(), false);
-                m_moduleBL = new SwerveModule(2, new SwerveModuleIOSim(), false);
-                m_moduleBR = new SwerveModule(3, new SwerveModuleIOSim(), false);
+                m_moduleFL = new SwerveModule(
+                    0,
+                    new SwerveModuleIOSimTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kFrontLeftDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kFrontLeftTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleFR = new SwerveModule(
+                    1,
+                    new SwerveModuleIOSimTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kFrontRightDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kFrontRightTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleBL = new SwerveModule(
+                    2,
+                    new SwerveModuleIOSimTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kBackLeftDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kBackLeftTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                m_moduleBR = new SwerveModule(
+                    3,
+                    new SwerveModuleIOSimTalonFx(
+                        SwerveConstants.SwerveModuleConstants.kBackRightDrivePort,
+                        SwerveConstants.SwerveModuleConstants.kBackRightTurnPort,
+                        SwerveConstants.SwerveModuleConstants.kUseFOC
+                    ),
+                    SwerveConstants.SwerveModuleConstants.kUseMotorPID
+                );
+                // m_moduleFL = new SwerveModule(0, new SwerveModuleIOSim(), false);
+                // m_moduleFR = new SwerveModule(1, new SwerveModuleIOSim(), false);
+                // m_moduleBL = new SwerveModule(2, new SwerveModuleIOSim(), false);
+                // m_moduleBR = new SwerveModule(3, new SwerveModuleIOSim(), false);
 
                 m_gyro = new LoggedGyro("Subsystems/Swerve/Gyro", new LoggedGyroIOSim());
 
@@ -107,6 +143,7 @@ public class SwerveSubsystem extends SubsystemBase {
         );
 
         m_gyro.resetYaw();
+        m_gyro.setYaw(Rotation2d.fromDegrees(180));
 
         m_poseEstimator = new SwerveDrivePoseEstimator(
             m_kinematics,
@@ -127,8 +164,8 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param fieldRelative
      */
     public void drive(double vx, double vy, double vrot, boolean fieldRelative) {
-        Rotation2d headingOffset = Util.getAlliance() == Alliance.Red ? Rotation2d.fromDegrees(180)
-            : Rotation2d.fromDegrees(0);
+        Rotation2d headingOffset = Util.getAlliance() == Alliance.Red ? Rotation2d.fromDegrees(0)
+            : Rotation2d.fromDegrees(180);
         ChassisSpeeds desiredSpeeds = fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(vy, vx, vrot, getHeading().plus(headingOffset))
             : new ChassisSpeeds(vx, vy, vrot);
@@ -171,6 +208,20 @@ public class SwerveSubsystem extends SubsystemBase {
         };
     }
 
+    /**
+     * Should be used for debug/testing purposes only
+     *
+     * @return
+     */
+    public SwerveModule[] getSwerveModules() {
+        return new SwerveModule[] {
+            m_moduleFL,
+            m_moduleFR,
+            m_moduleBL,
+            m_moduleBR
+        };
+    }
+
     public void setController(Command controller) {
         if (!controller.hasRequirement(this)) {
             DriverStation.reportWarning("Swerve Controller Command does not require this subsystem!", true);
@@ -189,6 +240,18 @@ public class SwerveSubsystem extends SubsystemBase {
         m_moduleFR.periodic();
         m_moduleBL.periodic();
         m_moduleBR.periodic();
+
+        if (m_gyro.isSim()) {
+            double vrot = m_kinematics.toChassisSpeeds(
+                m_moduleFL.getState(),
+                m_moduleFR.getState(),
+                m_moduleBL.getState(),
+                m_moduleBR.getState()
+            ).omegaRadiansPerSecond;
+            double newRot = m_gyro.getYaw().getRadians() + (vrot * Constants.kLoopPeriodSecs);
+
+            m_gyro.setYaw(Rotation2d.fromRadians(newRot));
+        }
 
         updatePose();
 
